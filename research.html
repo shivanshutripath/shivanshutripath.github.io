@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Research &middot; Shivanshu Tripathi</title>
+    <meta
+      name="description"
+      content="Research projects of Shivanshu Tripathi: agentic AI for power systems, physics-informed machine learning, online optimization, and distributed control."
+    />
+    <link rel="icon" href="assets/img/favicon.png" />
+    <link rel="stylesheet" href="assets/css/style.css?v=2" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap site-header__inner">
+        <a class="brand" href="index.html">Shivanshu Tripathi</a>
+        <nav class="nav" data-nav aria-label="Main">
+          <button
+            class="nav__toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="nav-list"
+          >
+            Menu
+          </button>
+          <ul class="nav__list" id="nav-list">
+            <li><a href="index.html">About</a></li>
+            <li><a href="research.html" aria-current="page">Research</a></li>
+            <li><a href="publications.html">Publications</a></li>
+            <li><a href="teaching.html">Teaching</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="section section--plain">
+        <div class="wrap">
+          <p class="eyebrow">Research</p>
+          <h1>What I work on</h1>
+          <div class="prose">
+            <p>
+              Machine learning is now good enough to be asked engineering
+              questions, and bad enough at arithmetic that we should not trust
+              its answers on their own. My research builds systems where the
+              model is held to something external and checkable &mdash; a
+              numerical solver, a circuit equation, a test suite &mdash; so that
+              the result is both data-efficient and verifiable. Most of this
+              work is grounded in power systems, where being wrong is expensive.
+            </p>
+            <p class="muted">
+              Interests: agentic AI, physics-informed machine learning,
+              foundation models, scientific machine learning, optimization, and
+              smart grids.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <div class="section__head">
+            <h2>Projects</h2>
+          </div>
+
+          <ul class="cards">
+            <li class="card">
+              <p class="card__meta">2025 &ndash; present &middot; dissertation</p>
+              <h3>Tool-augmented LLMs for power systems</h3>
+              <p class="muted">
+                Answering questions about distribution optimal power flow
+                requires a solver, not recall. VeraGrid-Agent writes the feeder
+                and DER simulator input, executes the open-source VeraGrid
+                solver, and reads back only the relevant result sections,
+                keeping the context compact and every claim traceable to solver
+                output. On VeraGrid-MCQ-150, a deterministic benchmark of 150
+                expert-templated questions we introduced, no-tool reasoning
+                scores 42.7&ndash;49.3% while the agent reaches
+                97.3&ndash;100%.
+              </p>
+              <p class="pub__links">
+                <a href="https://arxiv.org/abs/2607.25155">Paper</a>
+              </p>
+            </li>
+
+            <li class="card">
+              <p class="card__meta">2025 &ndash; present</p>
+              <h3>Agents that are made to prove themselves</h3>
+              <p class="muted">
+                Two lines of work on holding generated artifacts to executable
+                specifications. A test-driven agentic framework synthesizes
+                deployable low-level robot controllers, alternating between
+                prompt-level refinement and direct code editing in response to
+                structured PyTest feedback, evaluated on 2D navigation and 3D
+                Webots scenes. MathAgent, with Kishor Kumar Bhaumik, builds a
+                SciPy-augmented benchmark for agentic scientific computation.
+              </p>
+              <p class="pub__links">
+                <a href="https://arxiv.org/abs/2603.00455">Paper</a>
+                <a
+                  href="https://shivanshutripath.github.io/robotic_controller.github.io/"
+                  >Project page</a
+                >
+              </p>
+            </li>
+
+            <li class="card">
+              <p class="card__meta">2024 &ndash; present</p>
+              <h3>Physics-informed synchro-waveform analytics</h3>
+              <p class="muted">
+                Inverter-based resources are hard to model from data because
+                disturbance events are rare. Embedding the circuit relationships
+                into the learning problem compensates for that scarcity: the
+                framework estimates the IBR terminal current response from only
+                a few network disturbance signatures, and in the harder case
+                jointly identifies the transient dynamics and the unknown line
+                parameters. Validated on real waveform measurement unit data
+                across several sampling rates.
+              </p>
+              <p class="pub__links">
+                <a href="https://arxiv.org/abs/2601.17154">Paper</a>
+              </p>
+            </li>
+
+            <li class="card">
+              <p class="card__meta">2024 &ndash; present</p>
+              <h3>Event detection in continuous waveforms</h3>
+              <p class="muted">
+                Recasting event detection in continuously recorded IBR waveforms
+                as temporal object detection on spectrograms. Short-time Fourier
+                transforms per channel are stacked into a tensor, which exposes
+                transient and harmonic signatures more explicitly than raw
+                time series; a U-Net over that representation beats an
+                equivalent-capacity raw-waveform detector on both single-phase
+                disturbances and three-phase faults.
+              </p>
+              <p class="pub__links">
+                <a href="https://arxiv.org/abs/2607.20817">Paper</a>
+                <a
+                  href="https://github.com/shivanshutripath/Spectrogram-Based-Temporal-Event-Detection"
+                  >Code</a
+                >
+              </p>
+            </li>
+
+            <li class="card">
+              <p class="card__meta">2023 &ndash; present</p>
+              <h3>Online optimization with latent parameters</h3>
+              <p class="muted">
+                What if the cost function you are minimizing depends on
+                parameters you cannot measure, evolving under dynamics you do
+                not know? Using control-theoretic identification on gradient
+                measurements alone, the parameter dynamics can be recovered in
+                the original coordinates &mdash; and, under mild conditions,
+                from only finitely many measurements. A follow-up handles noisy
+                gradients via a Gauss-Markov reconstruction and an
+                instrumental-variable estimator, with a bound on expected
+                tracking error.
+              </p>
+              <p class="pub__links">
+                <a href="https://doi.org/10.1109/LCSYS.2025.3582207">L-CSS</a>
+                <a href="https://arxiv.org/abs/2605.22251">Follow-up</a>
+              </p>
+            </li>
+
+            <li class="card">
+              <p class="card__meta">2021 &ndash; present</p>
+              <h3>Distributed optimization for multi-agent systems</h3>
+              <p class="muted">
+                Earlier and continuing work on coordination without a
+                coordinator: a partially distributed economic dispatch algorithm
+                that converges in fixed time while accounting for transmission
+                losses through Kron&rsquo;s model, algorithm fusion for
+                heterogeneous online learning, and exact distributed attitude
+                alignment on SO(3) for robot teams whose local objectives
+                conflict.
+              </p>
+              <p class="pub__links">
+                <a href="https://doi.org/10.1109/TCNS.2023.3290110">TCNS</a>
+                <a href="https://arxiv.org/abs/2312.05432">ACC 2025</a>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <div class="section__head">
+            <h2>Talks &amp; presentations</h2>
+          </div>
+          <ul class="stack-list prose">
+            <li>
+              <span class="stack-list__key">Mar 2026</span>
+              <div>
+                <h3>Physics-informed learning</h3>
+                <p class="muted">
+                  NSF presentation, Rutgers University, March 17, 2026.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="stack-list__key">Sep 2025</span>
+              <div>
+                <h3>NC4 talk</h3>
+                <p class="muted">
+                  Army Research Laboratory, September 18, 2025.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="stack-list__key">Sep 2024</span>
+              <div>
+                <h3>NC4 work</h3>
+                <p class="muted">
+                  Army Research Laboratory, September 26, 2024.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="stack-list__key">Ongoing</span>
+              <div>
+                <h3>Quarterly project updates</h3>
+                <p class="muted">
+                  Presented to the Army Research Laboratory as the funding
+                  agency.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <div class="section__head">
+            <h2>Professional service</h2>
+          </div>
+          <ul class="stack-list prose">
+            <li>
+              <span class="stack-list__key">Power systems</span>
+              <div>
+                <p class="muted">
+                  Reviewer for IEEE Transactions on Smart Grid, IEEE
+                  Transactions on Dependable and Secure Computing, and IEEE PES
+                  Grid Edge.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="stack-list__key">Control</span>
+              <div>
+                <p class="muted">
+                  Reviewer for IEEE Transactions on Automatic Control, IEEE
+                  Control Systems Letters, the Conference on Decision and
+                  Control, the American Control Conference, the Conference on
+                  Control Technology and Applications, and the European Control
+                  Conference.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="wrap">
+          <div class="section__head">
+            <h2>Tools I use</h2>
+          </div>
+          <ul class="stack-list prose">
+            <li>
+              <span class="stack-list__key">Languages</span>
+              <div><p class="muted">Python, C++, MATLAB</p></div>
+            </li>
+            <li>
+              <span class="stack-list__key">Learning</span>
+              <div><p class="muted">PyTorch, TensorFlow</p></div>
+            </li>
+            <li>
+              <span class="stack-list__key">Solvers</span>
+              <div><p class="muted">CPLEX, OSQP</p></div>
+            </li>
+            <li>
+              <span class="stack-list__key">Simulators</span>
+              <div>
+                <p class="muted">PSCAD, OpenDSS, VeraGrid, Webots, ns-3</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <p style="margin: 0">
+          &copy; 2026 Shivanshu Tripathi &middot; Electrical and Computer
+          Engineering, UC Riverside
+        </p>
+        <ul class="social">
+          <li><a href="mailto:strip008@ucr.edu">Email</a></li>
+          <li><a href="https://github.com/shivanshutripath">GitHub</a></li>
+          <li>
+            <a
+              href="https://scholar.google.com/citations?user=dGasatwAAAAJ&amp;hl=en"
+              >Scholar</a
+            >
+          </li>
+        </ul>
+      </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
