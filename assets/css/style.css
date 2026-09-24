@@ -703,24 +703,37 @@ code {
 .split {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1.75rem, 4vw, 3.5rem);
-  align-items: start;
+  grid-template-rows: auto repeat(3, auto);
+  column-gap: clamp(1.75rem, 4vw, 3.5rem);
+  row-gap: 0.85rem;
+  align-items: stretch;
+}
+
+/* Each column shares the other's row tracks, so paired cards match in height. */
+.split > div {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 4;
+  min-width: 0;
 }
 
 .split > div > h2 {
-  margin-bottom: 1.5rem;
+  margin: 0 0 0.65rem;
 }
 
 .cv-list {
   list-style: none;
   display: grid;
-  gap: 0.85rem;
+  grid-template-rows: subgrid;
+  grid-row: 2 / span 3;
   margin: 0;
   padding: 0;
+  min-width: 0;
 }
 
 .cv-item {
   margin: 0;
+  height: 100%;
   padding: 1.15rem 1.25rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -779,6 +792,19 @@ code {
 @media (max-width: 640px) {
   .split {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .split > div,
+  .cv-list {
+    display: grid;
+    grid-template-rows: none;
+    grid-row: auto;
+    gap: 0.85rem;
+  }
+
+  .split > div > h2 {
+    margin-bottom: 0.65rem;
   }
 }
 
