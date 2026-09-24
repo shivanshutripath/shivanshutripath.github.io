@@ -326,44 +326,41 @@ code {
    ========================================================================== */
 
 .hero {
-  padding-block: clamp(2.5rem, 5vw, 4.5rem);
+  padding-block: clamp(1.75rem, 4vw, 2.75rem) clamp(2.5rem, 5vw, 4.5rem);
 }
 
-.hero__grid {
-  display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  gap: clamp(1.75rem, 4vw, 3.5rem);
-  align-items: start;
-}
-
-.hero__aside {
-  position: sticky;
-  top: 5.5rem;
+.intro {
+  display: flow-root;
 }
 
 .portrait {
-  width: 100%;
-  aspect-ratio: 4 / 5;
+  float: left;
+  width: 120px;
+  height: 150px;
+  margin: 10px 16px 10px 0;
   object-fit: cover;
-  border-radius: var(--radius);
+  object-position: center top;
   border: 1px solid var(--line);
   background: var(--bg-soft);
-  box-shadow: var(--shadow);
 }
 
-.hero__name {
-  margin-bottom: 0.35em;
-}
-
-.hero__role {
+.intro__name {
+  font-family: var(--font-sans);
   font-size: 1.0625rem;
-  color: var(--ink-soft);
-  margin-bottom: 1.5rem;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0;
+  margin: 0.55rem 0 0;
 }
 
-.hero__role strong {
+.intro__lines {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.intro__lines em a {
   color: var(--ink);
-  font-weight: 600;
+  font-style: italic;
 }
 
 .quick-links {
@@ -424,17 +421,6 @@ code {
   color: var(--ink-faint);
   min-width: 4.25rem;
   flex: none;
-}
-
-@media (max-width: 780px) {
-  .hero__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero__aside {
-    position: static;
-    max-width: 190px;
-  }
 }
 
 /* ==========================================================================
