@@ -441,6 +441,35 @@ code {
    News
    ========================================================================== */
 
+/* Fixed-height pane so a long news list does not dominate the page. */
+.news-window {
+  max-height: 26rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 1.25rem 0.25rem 0;
+  border-right: 1px solid transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.news-window::-webkit-scrollbar {
+  width: 8px;
+}
+
+.news-window::-webkit-scrollbar-track {
+  background: var(--bg-soft);
+  border-radius: 999px;
+}
+
+.news-window::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+.news-window::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+}
+
 .news {
   list-style: none;
   margin: 0;
