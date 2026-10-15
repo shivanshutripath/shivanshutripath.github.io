@@ -9,7 +9,7 @@
       content="Research projects of Shivanshu Tripathi: agentic AI for power systems, physics-informed machine learning, online optimization, and distributed control."
     />
     <link rel="icon" href="assets/img/favicon.png?v=6" />
-    <link rel="stylesheet" href="assets/css/style.css?v=6" />
+    <link rel="stylesheet" href="assets/css/style.css?v=7" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -67,6 +67,32 @@
           </div>
 
           <ul class="cards">
+            <li class="card">
+              <p class="card__meta">2026 &ndash; present</p>
+              <h3>Hybrid surrogates across discontinuities</h3>
+              <p class="muted">
+                A surrogate of a hybrid system should itself be a hybrid
+                system. Contact and impact do not live in one smooth equation:
+                a bouncing ball reverses its velocity at an instant, and a
+                press-fitted pin sticks, slips, and lets go. DA-PINNs put one
+                small network on each smooth interval and train the networks,
+                the event times, and the unknown physical parameters together.
+                The number of events is identified rather than fixed. On the
+                ball the method finds four impacts and the restitution to
+                0.1%. On a MuJoCo gantry pulling a press-fitted pin, it
+                recovers the stick&ndash;slip&ndash;release sequence and both
+                friction coefficients within 2%, including the pin velocity,
+                which is never measured.
+              </p>
+              <p class="pub__links">
+                <a href="projects/hybrid-surrogates/">Project page</a>
+                <a
+                  href="https://github.com/shivanshutripath/dapinn-hybrid-surrogates"
+                  >Code</a
+                >
+              </p>
+            </li>
+
             <li class="card">
               <p class="card__meta">2025 &ndash; present &middot; dissertation</p>
               <h3>Tool-augmented LLMs for power systems</h3>
@@ -287,7 +313,9 @@
             <li>
               <span class="stack-list__key">Simulators</span>
               <div>
-                <p class="muted">PSCAD, OpenDSS, VeraGrid, Webots, ns-3</p>
+                <p class="muted">
+                  PSCAD, OpenDSS, VeraGrid, Webots, MuJoCo, ns-3
+                </p>
               </div>
             </li>
           </ul>
