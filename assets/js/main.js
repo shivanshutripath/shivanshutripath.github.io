@@ -44,6 +44,15 @@
       );
       if (heading) heading.classList.toggle("is-hidden", visible === 0);
     });
+
+    // Number the visible entries in descending order: newest = highest.
+    const shown = entries.filter(function (entry) {
+      return !entry.classList.contains("is-hidden");
+    });
+    shown.forEach(function (entry, i) {
+      const num = entry.querySelector(".pub__num");
+      if (num) num.textContent = "[" + (shown.length - i) + "]";
+    });
   }
 
   filters.addEventListener("click", function (event) {
