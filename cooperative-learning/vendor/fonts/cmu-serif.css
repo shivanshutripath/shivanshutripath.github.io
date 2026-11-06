@@ -1,0 +1,32 @@
+/* Computer Modern Serif (CMU Serif), self-hosted.
+   Fonts: Computer Modern Unicode by Andrey V. Panov, web package by Christian Perfect
+   (https://github.com/dreampulse/computer-modern-web-font). SIL Open Font License 1.1, see OFL.txt.
+   The .woff files are the package's own; the .woff2 files are lossless re-encodings of the same
+   fonts (identical glyph outlines, not subset). */
+
+@font-face {
+  font-family: "Computer Modern Serif";
+  src: url("cmunrm.woff2") format("woff2"),
+       url("cmunrm.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Computer Modern Serif";
+  src: url("cmunbx.woff2") format("woff2"),
+       url("cmunbx.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Computer Modern Serif";
+  src: url("cmunti.woff2") format("woff2"),
+       url("cmunti.woff") format("woff");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
