@@ -21,11 +21,14 @@
   <link rel="preload" href="vendor/fonts/cmunrm.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/fonts/cmu-serif.css">
   <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/charts.css">
   <link rel="stylesheet" href="assets/css/webots-sim.css">
   <link rel="stylesheet" href="assets/css/playground.css">
 
   <script defer src="vendor/katex/katex.min.js"></script>
   <script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+  <script defer src="data/results.js"></script>
+  <script defer src="assets/js/charts.js"></script>
   <script defer src="assets/js/engine.js"></script>
   <script defer src="assets/js/playground.js"></script>
   <script type="module" src="assets/js/webots-sim.js"></script>
@@ -168,18 +171,20 @@
     <h2 class="title">Results</h2>
 
     <h3 class="subtitle-3">A charging cart for patrolling UAVs</h3>
-    <p class="lead">Six agencies each fly one patrol UAV over a wildfire site. Station \(i\) receives only the position of UAV \(i\), and only until \(t=N\), and talks only to its two neighbors on the ring. The stations must agree where a wheeled charging robot should be, the weighted centroid \(x^\star(t)\) of the UAVs, while wind gusts push the UAVs off their routes. Simulated in Webots.</p>
-    <figure class="figure paper-figure">
-      <img src="media/fig2_case_A.png" width="2600" height="932" loading="lazy" alt="Three panels: tracking RMSE versus training horizon N, identification error versus N, and identification error versus number of agents m, for cooperative identification (blue) and local identification (red).">
-      <figcaption>Cooperative identification (\(\tau=3\), blue) and local identification (\(\tau=0\), red), 50 Monte Carlo trials, tracking horizon of 200 steps. (a) Tracking RMSE versus \(N\). (b) Identification error \(\|\hat A^{(i)}-A\|_F\): 2.7–3 times lower together; the cooperative error falls from 0.008 to 0.005 as \(N\) grows. (c) Identical agents, \(N=100\): the error falls as \(1/\sqrt m\) and saturates for \(m\ge16\), where \(\sigma^\tau\) is no longer small.</figcaption>
-    </figure>
+    <p class="lead">Six agencies each fly one patrol UAV over a wildfire site. Station \(i\) receives only the position of UAV \(i\), and only until \(t=N\), and talks only to its two neighbors on the ring. The stations must agree where a wheeled charging robot should be while wind gusts push the UAVs off their routes. Simulated in Webots; 50 Monte Carlo trials, tracking horizon of 200 steps. Lines are medians and bands interquartile ranges; together means \(\tau=3\) consensus rounds, alone \(\tau=0\).</p>
+    <div class="chart-row">
+      <figure class="figure"><div class="chart" data-chart="a-rmse" role="img" aria-label="Charging cart: tracking RMSE versus training horizon N, together and alone"></div><figcaption>(a) Tracking RMSE versus \(N\).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="a-id" role="img" aria-label="Charging cart: identification error versus N, together and alone"></div><figcaption>(b) Identification error \(\|\hat A^{(i)}-A\|_F\): 2.7–3 times lower together, falling from 0.008 to 0.005 as \(N\) grows.</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="a-m" role="img" aria-label="Charging cart: identification error versus number of agents m"></div><figcaption>(c) Identical agents, \(N=100\): the error falls as \(1/\sqrt m\) and saturates for \(m\ge16\), where \(\sigma^\tau\) is no longer small.</figcaption></figure>
+    </div>
 
     <h3 class="subtitle-3">Decentralized recommendation with regional servers</h3>
-    <p class="lead">Eight regional servers agree on boosts for three content genres while the interests of their users drift with shared, unknown dynamics. The costs are logistic, not quadratic.</p>
-    <figure class="figure paper-figure">
-      <img src="media/fig4_case_B.png" width="2600" height="944" loading="lazy" alt="Three panels: tracking RMSE versus N, identification error versus N, and identification error versus consensus rounds tau with the exact-averaging level, for cooperative and local identification.">
-      <figcaption>Same trials and horizon. (a) Tracking RMSE: 24–37% lower together for every \(N\). (b) Identification error: 4.7–5.9 times lower together, between 0.022 and 0.026 for every \(N\). (c) Consensus rounds at \(N=100\) (\(\sigma=0.68\)): the error falls from 0.141 for \(\tau=0\) to 0.022 for \(\tau=5\), the value of exact averaging.</figcaption>
-    </figure>
+    <p class="lead">Eight regional servers agree on boosts for three content genres while the interests of their users drift with shared, unknown dynamics. The costs are logistic, not quadratic. Same trials and horizon.</p>
+    <div class="chart-row">
+      <figure class="figure"><div class="chart" data-chart="b-rmse" role="img" aria-label="Recommendation: tracking RMSE versus N"></div><figcaption>(a) Tracking RMSE: 24–37% lower together for every \(N\).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="b-id" role="img" aria-label="Recommendation: identification error versus N"></div><figcaption>(b) Identification error: 4.7–5.9 times lower together, between 0.022 and 0.026 for every \(N\).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="b-tau" role="img" aria-label="Recommendation: identification error versus consensus rounds tau"></div><figcaption>(c) Consensus rounds at \(N=100\) (\(\sigma=0.68\)): from 0.141 for \(\tau=0\) to 0.022 for \(\tau=5\), the value of exact averaging.</figcaption></figure>
+    </div>
   </div>
 </section>
 

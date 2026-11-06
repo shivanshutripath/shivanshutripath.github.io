@@ -1104,3 +1104,11 @@ header[tabindex="-1"]:focus {
 .paper-figure { margin: 0.5rem 0 2rem; }
 .paper-figure img { display: block; width: 100%; height: auto; }
 .paper-figure figcaption { text-align: left; }
+
+/* chart "Data" disclosure button */
+.chart .ch-data-btn {
+  font: inherit; font-size: 0.8rem; color: #6b6b6b;
+  background: none; border: 0; padding: 0.25rem 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 0.2em;
+}
+.chart .ch-data-btn:hover { color: #363636; }
