@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cooperative Learning of Shared Latent Dynamics · Shivanshu Tripathi</title>
+    <meta
+      name="description"
+      content="Project page for Cooperative Learning of Shared Latent Dynamics for Distributed Online Optimization. Interactive Webots replay, video, paper, and code."
+    />
+    <link rel="canonical" href="https://shivanshutripath.github.io/cooperative-learning/" />
+    <meta property="og:title" content="Cooperative Learning of Shared Latent Dynamics for Distributed Online Optimization" />
+    <meta
+      property="og:description"
+      content="Six ground stations learn one wind model from private UAV gradients and keep a charging robot on a moving target after the telemetry goes dark."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://shivanshutripath.github.io/cooperative-learning/media/collect.jpg" />
+    <link rel="icon" href="../assets/img/favicon.png" />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#sim">Skip to the simulation</a>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a class="brand" href="../index.html">Shivanshu Tripathi</a>
+        <nav class="nav" aria-label="On this page">
+          <a href="#sim">Simulation</a>
+          <a href="#video">Video</a>
+          <a href="#problem">Problem</a>
+          <a href="#method">Method</a>
+          <a href="#theory">Guarantees</a>
+          <a href="#results">Results</a>
+          <a href="#webots">Webots</a>
+          <a href="#code">Code</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <p class="kicker">Submitted to L4DC 2027</p>
+          <div class="hero-grid">
+            <div>
+              <h1>Cooperative Learning of Shared Latent Dynamics for Distributed Online Optimization</h1>
+              <p class="authors">
+                <strong>Shivanshu Tripathi</strong>, Electrical and Computer Engineering, UC Riverside<br />
+                <strong>Maziar Raissi</strong>, Mathematics, UC Riverside
+              </p>
+              <p>
+                Networked agents must agree on a decision that minimizes the sum of their local costs.
+                Each cost depends on a private parameter the agent cannot measure. The parameters move,
+                the motion is linear and unknown, and every agent sees the same dynamics. After a short
+                burst of noisy gradients, the measurements stop and the minimizer keeps moving.
+              </p>
+              <p>
+                The stations on this page reconstruct those parameters from windows of gradients, learn
+                the shared model by averaging instrumental-variable moments with their neighbors, and
+                track the minimizer by gradient tracking on the gradients they can forecast.
+              </p>
+              <div class="btn-row">
+                <a class="btn btn-solid" href="papers/main.pdf">Paper</a>
+                <a class="btn" href="papers/supplementary.pdf">Proofs</a>
+                <a class="btn" href="#video">Video</a>
+                <a class="btn" href="download/code.zip">Code</a>
+                <a class="btn" href="#sim">Open the simulation</a>
+              </div>
+            </div>
+            <figure class="hero-still">
+              <img src="media/collect.jpg" alt="Webots view during data collection: six colored UAVs over a burning warehouse, white radio links, and a charging robot on the access road." />
+              <figcaption>Webots, during data collection. Yellow lines are each station’s own UAV. White lines are the radio ring.</figcaption>
+            </figure>
+          </div>
+          <div class="stats">
+            <div class="stat"><b>2.6–3.1×</b><span>tighter estimate of the shared dynamics when six stations learn together</span></div>
+            <div class="stat"><b>2.9 m</b><span>how close the charging robot stays to the best position through a telemetry outage, N = 100</span></div>
+            <div class="stat"><b>1,222</b><span>real numbers each station sends in that run, and none of them is a position</span></div>
+            <div class="stat"><b>6 processes</b><span>one Webots controller per station, talking only over simulated radio</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="sim">
+        <div class="wrap">
+          <h2>The setting, running</h2>
+          <p class="dek">
+            A fire in the North Wharf solvent warehouse. Six agencies each fly one search UAV.
+            A wheeled charging robot carries the landing pad. The replay below is the audited
+            Webots run, seed 2026, N = 100, then 200 steps of tracking. Every coordinate comes
+            from the six station controllers. Drag to pan, scroll to zoom, and click a station.
+          </p>
+
+          <div class="stage-shell">
+            <div class="stage" id="stage">
+              <canvas id="world" aria-label="Top-down replay of the Webots scene. Six stations ring a burning warehouse. Their UAVs fly a search line. A charging robot drives toward the stations’ agreed position."></canvas>
+              <aside class="hud hud-tl">
+                <h3>Cooperative learning</h3>
+                <div class="phase-row">
+                  <span class="phase" id="phase-pill">COLLECT</span>
+                  <span class="clock" id="clock-read">0 s</span>
+                </div>
+                <p class="clock" id="step-read">t = 0 / 299</p>
+                <p class="blurb" id="blurb"></p>
+              </aside>
+              <aside class="hud hud-tr">
+                <h3>Stations · link · error in A</h3>
+                <div id="station-list"></div>
+                <p class="hud-note">Blue is together, orange is alone, on a log scale from 0.006 to 0.4. The yellow dot is a live telemetry link.</p>
+              </aside>
+              <aside class="hud hud-bl">
+                <h3>Error to x*(t), log scale</h3>
+                <canvas id="spark" width="260" height="92"></canvas>
+                <p class="hud-note">Blue: RMS of the six iterates. Gold: the robot. Grey: disagreement. Shade: data collection. Dashed line: t = N.</p>
+              </aside>
+              <aside class="hud hud-br">
+                <h3>In the scene</h3>
+                <div class="legend-key"><i style="background:#f6c445"></i> best position x*(t)</div>
+                <div class="legend-key"><i style="background:#e63333"></i> pin: station i’s choice x<sub>i</sub>(t)</div>
+                <div class="legend-key"><i style="background:#fff"></i> radio between neighbors</div>
+                <div class="legend-key"><i style="background:#f2d34a"></i> telemetry, own UAV, t &lt; N</div>
+                <div class="legend-key"><i style="background:#f7f4ee"></i> charging robot and its track</div>
+              </aside>
+            </div>
+            <div class="transport">
+              <button type="button" id="play" aria-pressed="false">Play</button>
+              <button type="button" id="step-back" aria-label="Step back">−1</button>
+              <button type="button" id="step-fwd" aria-label="Step forward">+1</button>
+              <input id="slider" type="range" min="0" max="299" value="0" aria-label="Time step" />
+              <label>Speed
+                <select id="speed" aria-label="Playback speed in steps per second">
+                  <option value="4">4 steps/s</option>
+                  <option value="12" selected>12 steps/s</option>
+                  <option value="30">30 steps/s</option>
+                  <option value="60">60 steps/s</option>
+                </select>
+              </label>
+              <span class="zoom-btns">
+                <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+                <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+                <button type="button" id="fit">Fit</button>
+              </span>
+            </div>
+            <div class="toggles">
+              <label><input type="checkbox" id="tog-telemetry" checked /> telemetry</label>
+              <label><input type="checkbox" id="tog-radio" checked /> radio</label>
+              <label><input type="checkbox" id="tog-iter" checked /> iterates</label>
+              <label><input type="checkbox" id="tog-xstar" checked /> x*(t)</label>
+              <label><input type="checkbox" id="tog-trails" checked /> trails</label>
+              <label><input type="checkbox" id="tog-forecast" checked /> forecasts</label>
+              <label><input type="checkbox" id="tog-labels" checked /> labels</label>
+              <label><input type="checkbox" id="tog-panels" checked /> panels</label>
+              <label><input type="checkbox" id="pause-learn" checked /> pause when A is learned</label>
+            </div>
+          </div>
+          <p class="sr-only" id="live" aria-live="polite"></p>
+          <p id="readout" class="dek" style="margin-top:0.8rem"></p>
+          <div class="detail" id="detail"></div>
+          <p class="dek">
+            One paper unit is 10 m, so the tracking errors above are also printed in metres.
+            In the diorama a unit is drawn as 0.5 m, which is why the whole site fits in one view,
+            and one algorithm step is ten simulator steps of 32 ms (0.32 s). Space plays and pauses.
+            Arrow keys step one frame. The open rings after t = 100 are each station’s forecast of its own UAV.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="video">
+        <div class="wrap">
+          <h2>Demonstration video</h2>
+          <p class="dek">
+            The same world, recorded in Webots at 1280×720 and played at 2× (1 min 40 s).
+            This take uses a longer tracking horizon, 500 steps, so the search line travels
+            farther around the warehouse. Three drones land on the moving pad as scenery.
+            The model and x*(t) do not change when they do.
+          </p>
+          <div class="video-frame">
+            <video controls playsinline preload="metadata" poster="media/collect.jpg">
+              <source src="media/disaster_response.mp4" type="video/mp4" />
+            </video>
+          </div>
+          <div class="shots" role="list">
+            <button type="button" aria-pressed="true" data-src="media/collect.jpg" data-alt="Data collection over the warehouse" data-cap="Collect, t &lt; N. The search line is turning east. Each station reads only its own drone, and the charging robot has left the depot.">
+              <img src="media/collect.jpg" alt="" />
+            </button>
+            <button type="button" aria-pressed="false" data-src="media/outage.jpg" data-alt="Telemetry links gone after identification" data-cap="The moment telemetry stops. The yellow links drop. Each station has just averaged its moment matrices with its two neighbors.">
+              <img src="media/outage.jpg" alt="" />
+            </button>
+            <button type="button" aria-pressed="false" data-src="media/charging.jpg" data-alt="A drone landed on the moving charging robot" data-cap="Tracking. A drone has landed on the pad and rides while it charges. The stations are forecasting, not watching.">
+              <img src="media/charging.jpg" alt="" />
+            </button>
+            <button type="button" aria-pressed="false" data-src="media/done.jpg" data-alt="End of the run, drones back on their lanes" data-cap="Done. The drones are back on their lanes. The run reports the tracking RMSE and the identification gain.">
+              <img src="media/done.jpg" alt="" />
+            </button>
+          </div>
+          <figure class="shot-view">
+            <img id="still" src="media/collect.jpg" alt="Data collection over the warehouse" />
+            <figcaption id="still-cap">Collect, t &lt; N. The search line is turning east. Each station reads only its own drone, and the charging robot has left the depot.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="problem">
+        <div class="wrap">
+          <h2>Abstract</h2>
+          <p>
+            We study networked agents that must agree on a decision minimizing the sum of their
+            local costs, where each cost contains unmeasurable stochastic parameters that evolve
+            with linear but unknown dynamics shared by all agents. Each agent receives only finitely
+            many noisy gradient measurements and must then keep tracking the moving minimizer. Our
+            scheme reconstructs the parameters from windows of gradients, learns the shared dynamics
+            cooperatively by averaging instrumental-variable moment matrices over the network, and
+            tracks the minimizer by gradient tracking on forecast gradients. We bound the error of
+            every agent in learning the dynamics and in tracking the minimizer, and show that the
+            learning error, and through it the tracking error, decreases with the number of agents.
+          </p>
+
+          <h2>What is hard about it</h2>
+          <div class="grid-3">
+            <article class="card">
+              <h3>The parameters are latent</h3>
+              <p>Station i never receives θ<sub>i</sub>. It receives noisy gradients of its own cost, and only while t &lt; N. System identification that assumes measured states does not apply.</p>
+            </article>
+            <article class="card">
+              <h3>The data are private and finite</h3>
+              <p>There is no server and no pooled dataset. After N gradients the oracle goes away, while x*(t) keeps moving with the wind and, in the Webots mission, with the search route.</p>
+            </article>
+            <article class="card">
+              <h3>Least squares is biased</h3>
+              <p>A window estimate of θ shares noise with the residual of the regression θ(t+1) ≈ A θ(t). Instrumental variables remove that errors-in-variables bias. Pooled least squares does not, and it gets worse as N grows.</p>
+            </article>
+          </div>
+
+          <h3 style="margin-top:1.3rem">Two case studies, one algorithm</h3>
+          <div class="table-wrap">
+            <table>
+              <caption>Constants of the two case studies. Ranges are drawn once per instance. In (A) one step is one second and one length unit is 10 m.</caption>
+              <thead>
+                <tr><th></th><th>(A) charging cart</th><th>(B) recommendation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Agents, decision, parameter</td><td>m = 6, n = 2, p = 2</td><td>m = 8, n = 3, p = 3</td></tr>
+                <tr><td>Graph</td><td>ring + 3 chords, σ = 0.50</td><td>ring + 2 chords, σ = 0.68</td></tr>
+                <tr><td>Shared dynamics A</td><td>0.99 Rot(0.15), period about 42 steps</td><td>block-diagonal: 0.98 Rot(0.25) and 0.95</td></tr>
+                <tr><td>Noise Q, R, P<sub>0</sub></td><td>0.05² I, 1.5² I, 4² I</td><td>0.02² I, 0.15² I, 1.5² I</td></tr>
+                <tr><td>Window k, step α</td><td>2, 0.2</td><td>3, 0.25</td></tr>
+                <tr><td>What moves</td><td>wind on six patrol UAVs; the cart should sit at their service-rate-weighted centroid</td><td>taste for three genres; eight servers must agree on shared feed boosts</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            In (A) the position of UAV i is a known plan plus an unknown deviation,
+            b<sub>i</sub>(t) = p<sub>i</sub>(t) + θ<sub>i</sub>(t), with θ<sub>i</sub>(t+1) = A θ<sub>i</sub>(t) + w<sub>i</sub>(t).
+            Putting the cart at x costs station i the weighted squared distance h<sub>i</sub> ‖x − b<sub>i</sub>(t)‖².
+            The team cost is smallest at x*(t) = Σ h<sub>i</sub> b<sub>i</sub>(t) / Σ h<sub>i</sub>.
+            A noisy gradient at any x is a noisy position of that UAV. The paper’s numerical study holds the plans fixed.
+            The Webots mission lets the plans move: a line abreast, 90 m long, whose centre circles the site once every 600 s.
+          </p>
+          <p>
+            In (B) eight regional servers hold their own engagement data. The backbone is sparse.
+            They must agree on a boost x ∈ ℝ³ for three genres while user interest drifts with a shared, unknown A:
+            a damped seasonal oscillation in the first two genres and a fading interest in the third.
+            The cost is a regularized logistic loss, so the gradients are nonlinear in x and the forecasts still enter linearly through θ.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="method">
+        <div class="wrap">
+          <h2>Three layers</h2>
+          <p class="dek">The cards follow the replay. Press play and the active layer is outlined.</p>
+          <div class="grid-3">
+            <article class="card" data-when="collect">
+              <p class="idx">1 · Reconstruct</p>
+              <h3>Windows of gradients</h3>
+              <p>For each window of length k, agent i stacks its noisy gradients and the known sensitivity of the cost, and computes the Gauss–Markov estimate of θ<sub>i</sub> at the start of the window. The estimate splits into the truth, a noise term, and a bias from the drift of θ inside the window.</p>
+              <p class="eq">θ̃<sub>i</sub>(t) = K<sub>i,t</sub> ȳ<sub>i,t</sub></p>
+            </article>
+            <article class="card" data-when="learn">
+              <p class="idx">2 · Identify</p>
+              <h3>Consensus on moment matrices</h3>
+              <p>Least squares on θ̃(t+1) ≈ A θ̃(t) is inconsistent, because the regressor and the residual share measurement noise. The instrument is the window estimate from k steps earlier. Agents average the two p×p moment matrices for τ rounds and invert locally.</p>
+              <p class="eq">Â<sub>i</sub> = M̂<sub>1</sub><sup>(i)</sup>(τ) (M̂<sub>0</sub><sup>(i)</sup>(τ))<sup>−1</sup></p>
+            </article>
+            <article class="card" data-when="track">
+              <p class="idx">3 · Track</p>
+              <h3>Forecast, then gradient tracking</h3>
+              <p>After t = N the last window estimate is rolled forward with Â<sub>i</sub>. Gradient tracking runs the whole time: on measured gradients while data are arriving, and on forecast gradients afterwards. An estimate whose spectral radius exceeds 0.999 is rescaled to that radius before it is used to forecast.</p>
+              <p class="eq">x<sub>i</sub><sup>+</sup> = Σ<sub>j</sub> W<sub>ij</sub> (x<sub>j</sub> − α s<sub>j</sub>)</p>
+            </article>
+          </div>
+          <p>
+            What crosses the radio is an iterate, a gradient tracker, and, once, the moment matrices.
+            For p = 2 that is 2 reals per tracking message and 24 reals for three consensus rounds
+            of two 2×2 matrices. A measurement, a parameter, and a forecast stay where they were computed.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="theory">
+        <div class="wrap">
+          <h2>What the bounds say</h2>
+          <p>
+            With m agents and N gradients each, every agent identifies A with a statistical error
+            of order √(log(m/δ) / (m N)), the rate of a single learner holding all mN samples,
+            plus a consensus term that decays geometrically in the number of rounds, plus a
+            windowing bias set by k and by ‖A − I‖. The gain survives latent observations,
+            the window bias, and finitely many consensus rounds.
+          </p>
+          <p>For t ≥ N the tracking error of agent i splits into three pieces:</p>
+          <div class="split-3">
+            <article class="term">
+              <h3>Disagreement</h3>
+              <p>How far x<sub>i</sub> sits from the average of the iterates. Gradient tracking contracts it at a rate set by the network.</p>
+            </article>
+            <article class="term">
+              <h3>Optimization</h3>
+              <p>How far that average sits from the minimizer of the forecast costs. This is the lag of a constant step size behind a moving target.</p>
+            </article>
+            <article class="term">
+              <h3>Prediction</h3>
+              <p>How far the forecast minimizer sits from the true x*(t). Cooperation shrinks this term. Forecasting a stochastic parameter leaves a floor that no amount of communication removes.</p>
+            </article>
+          </div>
+          <p>
+            The learning error decreases with m, and the tracking error follows it.
+            The gain is largest when N is small. Once N is large enough that the forecast is
+            already close to an oracle that knows A, extra samples mostly buy a cleaner model,
+            and the remaining tracking error is the lag behind x*(t).
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="results">
+        <div class="wrap">
+          <h2>Case study A · charging cart</h2>
+          <p class="dek">
+            Fifty Monte Carlo trials, tracking horizon 200 steps, τ = 3 against a station that
+            identifies alone (τ = 0). Lines are medians. Bands are interquartile ranges.
+            Hover a marker for the value. RMSE is in units of 10 m.
+          </p>
+          <div class="charts">
+            <figure class="chart-card">
+              <canvas id="chart-a-rmse" aria-label="Tracking RMSE versus training horizon for the charging cart"></canvas>
+              <figcaption>(a) Tracking RMSE versus N. Cooperation helps most when the record is short.</figcaption>
+            </figure>
+            <figure class="chart-card">
+              <canvas id="chart-a-id" aria-label="Identification error versus training horizon"></canvas>
+              <figcaption>(b) ‖Â<sub>i</sub> − A‖<sub>F</sub> versus N. Together is 2.7–3.0 times closer at every N.</figcaption>
+            </figure>
+            <figure class="chart-card">
+              <canvas id="chart-a-m" aria-label="Identification error versus number of agents"></canvas>
+              <figcaption>(c) Identical UAVs, N = 100. The cooperative error falls as 1/√m until the graph’s contraction σ gets close to 1.</figcaption>
+            </figure>
+          </div>
+          <details>
+            <summary>Median values, case A</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>N</th><th class="num">RMSE together</th><th class="num">RMSE alone</th><th class="num">‖Â−A‖ together</th><th class="num">‖Â−A‖ alone</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>30</td><td class="num">0.324</td><td class="num">0.551</td><td class="num">0.0082</td><td class="num">0.0240</td></tr>
+                  <tr><td>50</td><td class="num">0.297</td><td class="num">0.388</td><td class="num">0.0063</td><td class="num">0.0179</td></tr>
+                  <tr><td>100</td><td class="num">0.275</td><td class="num">0.286</td><td class="num">0.0061</td><td class="num">0.0165</td></tr>
+                  <tr><td>150</td><td class="num">0.255</td><td class="num">0.309</td><td class="num">0.0056</td><td class="num">0.0154</td></tr>
+                  <tr><td>200</td><td class="num">0.246</td><td class="num">0.262</td><td class="num">0.0050</td><td class="num">0.0148</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Identification versus the number of identical agents, N = 100: together 0.0152, 0.0084, 0.0053, 0.0055, 0.0052 at m = 2, 4, 8, 16, 32. Alone stays near 0.019–0.025.</p>
+          </details>
+
+          <h2>Case study B · recommendation</h2>
+          <p class="dek">
+            Same trial count and horizon. Cooperation cuts tracking RMSE by 24–37% at every N,
+            and for N ≥ 100 it sits within 3% of an oracle that knows A. Local estimates fail
+            the stability test in 29–33% of trials. None of the cooperative estimates do.
+            The cooperative error sits on a bias floor near 0.024, which is what the window
+            length and ‖A − I‖ = 0.25 predict. Pooled least squares moves the wrong way, from
+            0.028 at N = 30 to 0.093 at N = 200.
+          </p>
+          <div class="charts">
+            <figure class="chart-card">
+              <canvas id="chart-b-rmse" aria-label="Recommendation tracking RMSE versus N"></canvas>
+              <figcaption>(a) Tracking RMSE versus N.</figcaption>
+            </figure>
+            <figure class="chart-card">
+              <canvas id="chart-b-id" aria-label="Recommendation identification error versus N"></canvas>
+              <figcaption>(b) Identification error. Pink is pooled least squares.</figcaption>
+            </figure>
+            <figure class="chart-card">
+              <canvas id="chart-b-tau" aria-label="Identification error versus consensus rounds"></canvas>
+              <figcaption>(c) Consensus rounds at N = 100. One round does most of the work. The blue dashed line is exact averaging.</figcaption>
+            </figure>
+          </div>
+          <details>
+            <summary>Median values, case B</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>N</th><th class="num">RMSE together</th><th class="num">RMSE alone</th><th class="num">‖Â−A‖ together</th><th class="num">‖Â−A‖ alone</th><th class="num">pooled LS</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>30</td><td class="num">0.0190</td><td class="num">0.0300</td><td class="num">0.0248</td><td class="num">0.116</td><td class="num">0.0277</td></tr>
+                  <tr><td>50</td><td class="num">0.0173</td><td class="num">0.0259</td><td class="num">0.0224</td><td class="num">0.115</td><td class="num">0.0330</td></tr>
+                  <tr><td>100</td><td class="num">0.0143</td><td class="num">0.0188</td><td class="num">0.0239</td><td class="num">0.141</td><td class="num">0.0543</td></tr>
+                  <tr><td>150</td><td class="num">0.0141</td><td class="num">0.0216</td><td class="num">0.0259</td><td class="num">0.134</td><td class="num">0.0715</td></tr>
+                  <tr><td>200</td><td class="num">0.0141</td><td class="num">0.0216</td><td class="num">0.0250</td><td class="num">0.141</td><td class="num">0.0928</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>At N = 100 the identification error versus τ is 0.141, 0.038, 0.027, 0.024, 0.022, 0.022 for τ = 0, 1, 2, 3, 5, 10. Exact averaging is 0.022. Tracking RMSE drops from 0.019 at τ = 0 to 0.014 at τ = 1 and then stays within 2% of that value. One or two rounds, at most 36 reals per link, recover almost all of the cooperative gain.</p>
+          </details>
+          <p>
+            Against the other baselines in (B), tracking RMSE is 2.2–6.3 times lower than persistence,
+            which freezes the last window estimate (Â = I). It is at most 13% above a centralized
+            predictor that sees every forecast and minimizes the sum exactly, and 2% above it for N ≥ 100.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="webots">
+        <div class="wrap">
+          <h2>Webots, as a distributed program</h2>
+          <p>
+            Case study (A) also runs inside Webots with one controller process per station.
+            Stations hold only their own telemetry and their own variables. They use only the
+            packets of their two nearest neighbors, a ring with σ = 2/3, which is sparser than
+            the graph in the table above. A supervisor plays the wind and, while t &lt; N, sends
+            UAV i’s noisy position to station i alone. It does not relay station traffic and it
+            does not move the robot. The robot has its own controller, wheel contact, and a
+            receiver. It drives to the mean of the iterates it hears.
+          </p>
+          <div class="grid-2">
+            <article class="card">
+              <h3>What changed from the table</h3>
+              <ul>
+                <li>The UAVs fly the moving search line, so the known part of the cost depends on time. The algorithm is unchanged. The analysis assumed a static known part.</li>
+                <li>Initial deviation P<sub>0</sub> = 2.5² I, smaller than 4² I, so the loops read more clearly and the dynamics are excited less.</li>
+                <li>Position noise of standard deviation 0.75, which matches the paper’s gradient noise at h<sub>i</sub> = 1.</li>
+                <li>Service rates fixed at 1.0, 1.4, 0.6, 1.2, 0.8, 1.0 for police, fire, medical, search and rescue, utilities, and civil protection.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>The runs are the algorithm</h3>
+              <p>One hundred runs: N in {30, 50, 100, 150, 200}, twenty seeds each, 200 tracking steps. Replaying the reference code on the recorded telemetry reproduces the stations’ estimates to 6×10<sup>−16</sup> and their iterates to 8×10<sup>−15</sup>. Local identification, exact averaging, the oracle, and persistence are replayed on the same telemetry.</p>
+              <p>A run with N = 100 takes 4.3 s of wall-clock time on a laptop. Each station sends 1,222 reals in 602 packets, about 46 kB in the simulator’s JSON encoding.</p>
+            </article>
+          </div>
+          <p>
+            Cooperation reduces the median identification error from 0.030–0.042 to 0.011–0.014,
+            a factor 2.6–3.1 at every N, at least √m = 2.45. Three rounds stay within 14% of exact
+            averaging even though σ³ = 0.30. Before the safeguard, 23–32% of the local estimates
+            are not Schur stable, against at most 4% of the cooperative ones, and none for N ≥ 150.
+            The errors are about twice Figure (b) of case A because the smaller initial deviation
+            excites A less: a synthetic check gives median error 0.0125 at P<sub>0</sub> = 2.5² I
+            against 0.0066 at the paper’s 4² I.
+          </p>
+          <p>
+            Tracking RMSE is 16–39% lower with cooperation than alone, within 16% of the oracle
+            that knows A, and within 3% of it for N ≥ 100. It is 1.4–4.0 times lower than persistence.
+            At N = 100 the iterates stay within 3.8 m RMS of x*(t) through the outage, against 4.5 m
+            alone and 8.3 m with persistence. The robot, driving after their mean, stays within 2.9 m.
+          </p>
+          <div class="charts two">
+            <figure class="chart-card">
+              <canvas id="chart-w-rmse" aria-label="Webots tracking RMSE versus N"></canvas>
+              <figcaption>Webots tracking RMSE, medians over 20 seeds. Units of 10 m, on [N+50, N+200).</figcaption>
+            </figure>
+            <figure class="chart-card">
+              <canvas id="chart-w-id" aria-label="Webots identification error versus N"></canvas>
+              <figcaption>Webots identification error. Exact averaging is the limit of infinite consensus rounds.</figcaption>
+            </figure>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption>Webots medians. RMSE in paper units of 10 m. The ratio is the local identification error divided by the cooperative one.</caption>
+              <thead>
+                <tr>
+                  <th>N</th>
+                  <th class="num">RMSE persist.</th>
+                  <th class="num">RMSE local</th>
+                  <th class="num">RMSE coop.</th>
+                  <th class="num">RMSE oracle</th>
+                  <th class="num">‖Â−A‖ local</th>
+                  <th class="num">‖Â−A‖ coop.</th>
+                  <th class="num">exact avg.</th>
+                  <th class="num">ratio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>30</td><td class="num">1.547</td><td class="num">0.631</td><td class="num">0.385</td><td class="num">0.357</td><td class="num">0.0420</td><td class="num">0.0143</td><td class="num">0.0125</td><td class="num">2.9</td></tr>
+                <tr><td>50</td><td class="num">1.115</td><td class="num">0.527</td><td class="num">0.394</td><td class="num">0.339</td><td class="num">0.0327</td><td class="num">0.0106</td><td class="num">0.0100</td><td class="num">3.1</td></tr>
+                <tr><td>100</td><td class="num">0.825</td><td class="num">0.446</td><td class="num">0.376</td><td class="num">0.369</td><td class="num">0.0303</td><td class="num">0.0110</td><td class="num">0.0097</td><td class="num">2.7</td></tr>
+                <tr><td>150</td><td class="num">0.631</td><td class="num">0.402</td><td class="num">0.337</td><td class="num">0.336</td><td class="num">0.0325</td><td class="num">0.0114</td><td class="num">0.0108</td><td class="num">2.8</td></tr>
+                <tr><td>200</td><td class="num">0.451</td><td class="num">0.374</td><td class="num">0.316</td><td class="num">0.308</td><td class="num">0.0323</td><td class="num">0.0123</td><td class="num">0.0108</td><td class="num">2.6</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            The interactive run is seed 2026 at N = 100. On that seed the mean identification
+            error is 0.019 together and 0.105 alone (5.6×), the tracking RMSE on [150, 300) is
+            0.291 units (2.9 m), and the robot drives about 24 m in the diorama.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="code">
+        <div class="wrap">
+          <h2>Code</h2>
+          <p class="dek">Numpy for the paper experiments. Webots for the distributed run. Nothing is downloaded at runtime.</p>
+          <div class="grid-2">
+            <article class="card">
+              <h3>Paper experiments</h3>
+              <p><code>paper_code/experiments.py</code> is Algorithm 1: windowed Gauss–Markov reconstruction, cooperative instrumental-variable identification, gradient tracking on the forecast, and the baselines (local identification, exact averaging, pooled least squares, persistence, a centralized predictor, an oracle that knows A, an oracle Kalman filter). Both case studies use the constants in the table above.</p>
+              <pre class="filetree">cd paper_code
+python3 experiments.py --out data --jobs 4
+python3 summarize.py data
+python3 make_tikz.py data tikz</pre>
+            </article>
+            <article class="card">
+              <h3>Webots controllers</h3>
+              <p>Each station is <code>controllers/rendezvous_robot</code>. The charging robot is <code>controllers/charging_robot</code>. The supervisor plays the wind, the search routes, the recharge flights, and the overlays. On macOS 27, use the Webots nightly build; the stable R2025a package reports every port as in use.</p>
+              <pre class="filetree">open -a Webots-nightly \
+  webots_demo/worlds/disaster_response.wbt
+
+cd webots_demo
+python3 tools/collect_data.py \
+  --N 100 --track 200 --seeds 2026-2045
+python3 tools/analyze_runs.py output/runs</pre>
+            </article>
+          </div>
+          <div class="btn-row">
+            <a class="btn btn-solid" href="download/code.zip">Download code (.zip)</a>
+            <a class="btn" href="papers/main.pdf">Download paper</a>
+            <a class="btn" href="papers/supplementary.pdf">Download proofs</a>
+            <a class="btn" href="media/disaster_response.mp4" download>Download video</a>
+          </div>
+          <p>
+            The zip is the source that regenerates the figures and the simulation: the experiment
+            code, the world, the protos, and the controllers. It omits the hundred logged runs.
+            The commands above reproduce them. Each controller <code>runtime.ini</code> points at
+            a local Python; edit that path before opening the world. The interpreter needs numpy.
+          </p>
+
+          <h2 id="cite">Citation</h2>
+          <div class="bib">
+            <pre id="bibtex">@inproceedings{tripathi2027cooperative,
+  title     = {Cooperative Learning of Shared Latent Dynamics
+               for Distributed Online Optimization},
+  author    = {Tripathi, Shivanshu and Raissi, Maziar},
+  booktitle = {Learning for Dynamics and Control},
+  year      = {2027},
+  note      = {Submitted}
+}</pre>
+            <button type="button" class="btn" id="copy-bib">Copy BibTeX</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">
+        <p>
+          Shivanshu Tripathi · UC Riverside ·
+          <a href="mailto:strip008@ucr.edu">strip008@ucr.edu</a> ·
+          <a href="../index.html">Home</a> ·
+          <a href="../publications.html">Publications</a>
+        </p>
+        <p>The replay is a faithful trace of Webots seed 2026. The video is a separate, longer take of the same world.</p>
+      </div>
+    </footer>
+    <div id="tip" role="tooltip"></div>
+    <script src="data/run.js"></script>
+    <script src="assets/sim.js"></script>
+  </body>
+</html>
