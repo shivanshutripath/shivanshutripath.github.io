@@ -271,7 +271,8 @@ class WebotsSim {
     this.stage = h('div', {
       class: 'ws-stage', tabindex: '0', role: 'group', 'aria-roledescription': 'simulation viewer',
       'aria-label': 'Webots simulation. Space plays or pauses, the arrow keys step.',
-    }, this.layer3d, this.topCanvas, this.poster, this.hud, this.center, this.msg, this.toast, this.live);
+    }, this.layer3d, this.poster, this.hud, this.center, this.msg, this.toast, this.live, h('span', { class: 'ws-viewtag', text: '3D' }));
+    this.topBox = h('div', { class: 'ws-topbox' }, this.topCanvas, h('span', { class: 'ws-viewtag', text: 'Top view' }));
 
     // control bar
     this.playBtn = h('button', { class: 'ws-btn ws-btn--play', type: 'button', 'aria-label': 'Play', html: icon('play') });
@@ -295,13 +296,14 @@ class WebotsSim {
     this.btnTop = h('button', { class: 'ws-seg', type: 'button', 'aria-pressed': 'false', text: 'Top' });
     this.viewSwitch = h('div', { class: 'ws-switch', role: 'group', 'aria-label': 'View' }, this.btn3d, this.btnTop);
     this.resetBtn = h('button', { class: 'ws-btn ws-btn--icon', type: 'button', 'aria-label': 'Reset camera', title: 'Reset camera', html: icon('fit') });
-    this.tools = h('div', { class: 'ws-tools' }, this.timeOut, this.speedSel, this.viewSwitch, this.resetBtn);
+    this.tools = h('div', { class: 'ws-tools' }, this.timeOut, this.speedSel, this.resetBtn);
     this.bar = h('div', { class: 'ws-bar' }, this.playBtn, this.timeline, this.tools);
 
     // panels
     this.panes = h('div', { class: 'ws-panes' }, this.buildStations(), this.buildChart(), this.buildLegend());
     this.console = h('div', { class: 'ws-console' }, this.bar, this.panes);
-    root.append(this.stage, this.console);
+    this.views = h('div', { class: 'ws-views' }, this.stage, this.topBox);
+    root.append(this.views, this.console);
     this.syncStage();
     this.bind();
   }
@@ -317,7 +319,8 @@ class WebotsSim {
     this.stDetail = h('div', { class: 'ws-st-detail', hidden: true });
     this.stKey = h('span', { class: 'ws-key' },
       h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--coop' }), 'together'),
-      h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--local' }), 'alone'));
+      h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--local' }), 'alone'),
+      h('span', { class: 'ws-key-item ws-key-item--exact' }, h('i', { class: 'ws-sw ws-sw--exact' }), 'exact averaging'));
     return h('section', { class: 'ws-pane ws-pane--stations', 'aria-label': 'Stations' },
       h('header', { class: 'ws-pane-head' }, h('h3', { class: 'ws-pane-title', text: 'Stations' }), this.stKey),
       this.stMain, this.stDetail);
@@ -422,6 +425,9 @@ class WebotsSim {
     this.stage.addEventListener('pointerup', () => { this.downAt = null; });
     this.stage.addEventListener('pointerleave', () => { this.armed = false; });
     this.stage.addEventListener('wheel', (e) => this.onWheel(e), { capture: true, passive: false });
+    this.topBox.addEventListener('pointerdown', () => { this.armed = true; });
+    this.topBox.addEventListener('pointerleave', () => { this.armed = false; });
+    this.topBox.addEventListener('wheel', (e) => this.onWheel(e), { capture: true, passive: false });
     this.stage.addEventListener('touchstart', (e) => {
       // one finger scrolls the page; two fingers orbit and zoom the scene
       if (e.touches.length < 2) e.stopPropagation();
@@ -476,6 +482,7 @@ class WebotsSim {
         this.roPending = requestAnimationFrame(() => { this.roPending = 0; this.onResize(); });
       });
       this.ro.observe(this.stage);
+      this.ro.observe(this.topBox);
       this.ro.observe(this.chart);
     } else {
       window.addEventListener('resize', () => this.onResize());
@@ -553,8 +560,8 @@ class WebotsSim {
     if (e.deltaMode === 1) dy *= 16;
     else if (e.deltaMode === 2) dy *= 400;
     const factor = Math.exp(clamp(dy, -240, 240) * (e.ctrlKey && !this.armed ? 0.01 : 0.0022));
-    if (this.view === '3d') this.zoom3d(factor);
-    else this.zoomTop(factor, e.clientX, e.clientY);
+    if (this.topBox.contains(e.target)) this.zoomTop(factor, e.clientX, e.clientY);
+    else this.zoom3d(factor);
   }
 
   hint(text) {
@@ -670,6 +677,7 @@ class WebotsSim {
     const R = this.run;
     const span = Math.log(BAR_X[1] / BAR_X[0]);
     const bx = (v) => clamp(Math.log(Math.max(v, BAR_X[0]) / BAR_X[0]) / span, 0.02, 1);
+    const ex = Number(R.summary.idExact) || 0;
     this.stRows = [];
     this.stList.textContent = '';
     R.agencies.forEach((name, i) => {
@@ -682,9 +690,10 @@ class WebotsSim {
       h('i', { class: 'ws-st-dot' }),
       h('span', { class: 'ws-st-name', text: name }),
       h('span', { class: 'ws-st-tele' }, h('i', { class: 'ws-tele', title: 'telemetry' })),
-      h('span', { class: 'ws-bars', title: `together ${coop.toFixed(4)}, alone ${local.toFixed(4)}` },
+      h('span', { class: 'ws-bars', title: `together ${coop.toFixed(4)}, alone ${local.toFixed(4)}` + (ex ? `, exact averaging ${ex.toFixed(4)} (every station)` : '') },
         h('i', { class: 'ws-ebar ws-ebar--coop', style: `--w:${(100 * bx(coop)).toFixed(2)}%` }),
-        h('i', { class: 'ws-ebar ws-ebar--local', style: `--w:${(100 * bx(local)).toFixed(2)}%` })));
+        h('i', { class: 'ws-ebar ws-ebar--local', style: `--w:${(100 * bx(local)).toFixed(2)}%` }),
+        ex ? h('i', { class: 'ws-exmark', style: `left:${(100 * bx(ex)).toFixed(2)}%` }) : null));
       this.stRows.push(row);
       this.stList.append(row);
     });
@@ -693,7 +702,8 @@ class WebotsSim {
       this.stTicks.append(h('span', { style: `left:${(100 * bx(v)).toFixed(2)}%`, text: String(v) }));
     }
     const s = R.summary;
-    this.footLearned = `mean <b class="ws-c-coop">${Number(s.idCoop).toFixed(4)}</b> together, <b class="ws-c-local">${Number(s.idLocal).toFixed(4)}</b> alone (${Number(s.ratio).toFixed(1)}×)`;
+    this.footLearned = `mean <b class="ws-c-coop">${Number(s.idCoop).toFixed(4)}</b> together, <b class="ws-c-local">${Number(s.idLocal).toFixed(4)}</b> alone (${Number(s.ratio).toFixed(1)}×)` +
+      (s.idExact ? `<br>exact averaging <b class="ws-c-coop">${Number(s.idExact).toFixed(4)}</b>, the same for every station` : '');
     this.footBefore = `<i>Â</i> is learned at <i>t</i> = <i>N</i> = ${this.N}`;
   }
 
@@ -703,7 +713,7 @@ class WebotsSim {
     if (this.state3d !== 'idle') return;
     if (this.webgl === undefined) this.webgl = hasWebGL2();
     if (!this.webgl) {
-      this.fail3d('3D view unavailable here (WebGL 2 is off), showing the top view.');
+      this.fail3d('3D view unavailable here (WebGL 2 is off).');
       return;
     }
     this.state3d = 'loading';
@@ -715,13 +725,17 @@ class WebotsSim {
     this.loadTimer = setTimeout(() => {
       if (this.state3d === 'loading') {
         this.slow = true;
-        this.showMsg('The 3D view is still loading; showing the top view.');
-        if (this.view === '3d') this.setView('top', true);
+        this.showMsg('The 3D view is still loading.');
+        if (this.wantPlay) {
+          this.wantPlay = false;
+          this.root.classList.remove('ws--want-play');
+          this.play();
+        }
       }
     }, LOAD_TIMEOUT);
     this.errorListener = (ev) => {
       const src = (ev && ev.filename) || '';
-      if (this.state3d === 'loading' && src.indexOf('/vendor/webots/') >= 0) this.fail3d('The 3D view failed to load; showing the top view.');
+      if (this.state3d === 'loading' && src.indexOf('/vendor/webots/') >= 0) this.fail3d('The 3D view failed to load.');
     };
     window.addEventListener('error', this.errorListener);
     try {
@@ -742,7 +756,7 @@ class WebotsSim {
       await this.mount3d(w3dText, json);
     } catch (err) {
       console.error('[webots-sim]', err);
-      this.fail3d('The 3D view failed to load; showing the top view.');
+      this.fail3d('The 3D view failed to load.');
     }
   }
 
@@ -829,7 +843,7 @@ class WebotsSim {
       this.canvas3d.setAttribute('aria-hidden', 'true');
       this.canvas3d.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
-        this.fail3d('The 3D view stopped (graphics context lost); showing the top view.');
+        this.fail3d('The 3D view stopped (graphics context lost).');
       });
     }
     this.hiDPI();
@@ -956,7 +970,7 @@ class WebotsSim {
       this.wantPlay = true;
       return;
     }
-    if (this.view === '3d' && this.state3d !== 'ready' && this.state3d !== 'failed') {
+    if (this.state3d !== 'ready' && this.state3d !== 'failed' && !this.slow) {
       // wait for the scene
       this.wantPlay = true;
       this.root.classList.add('ws--want-play');
@@ -1070,7 +1084,7 @@ class WebotsSim {
         if (force) this.w3dRender();
       }
     }
-    if (this.view === 'top') this.drawTop();
+    this.drawTop();
     // timeline (continuous)
     const p = clamp(pos / FPS / this.T, 0, 1);
     const ps = (100 * p).toFixed(3) + '%';
@@ -1151,7 +1165,7 @@ class WebotsSim {
       const back = this.stDetail.querySelector('.ws-back');
       if (moveFocus && back) back.focus({ preventScroll: true });
     }
-    if (this.view === 'top') this.drawTop();
+    this.drawTop();
   }
 
   renderDetail() {
@@ -1306,7 +1320,6 @@ class WebotsSim {
     let pinch = null;
     let down = null;
     cv.addEventListener('pointerdown', (e) => {
-      if (this.view !== 'top') return;
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
       down = { x: e.clientX, y: e.clientY, id: e.pointerId, moved: false };
       if (e.pointerType === 'mouse') {
@@ -1320,7 +1333,6 @@ class WebotsSim {
       }
     });
     cv.addEventListener('pointermove', (e) => {
-      if (this.view !== 'top') return;
       if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
       if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) down.moved = true;
       if (pan) {
@@ -1816,16 +1828,17 @@ class WebotsSim {
   }
 
   resetCamera() {
-    if (this.view === '3d') this.fit3d();
-    else this.fitTop(true);
+    this.fit3d();
+    this.fitTop(true);
   }
 
   onResize() {
     const r = this.stage.getBoundingClientRect();
-    if (r.width < 10) return;
+    const rt = this.topBox.getBoundingClientRect();
+    if (r.width < 10 && rt.width < 10) return;
     // top view canvas
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.round(r.width), hh = Math.round(r.height);
+    const w = Math.round(rt.width), hh = Math.round(rt.height);
     const changed = this.topW !== w || this.topH !== hh || this.topDpr !== dpr;
     if (changed) {
       this.topW = w;
@@ -1845,12 +1858,13 @@ class WebotsSim {
     }
     // fit when the size changed (unless the user moved the map) and whenever no fit was possible yet
     if ((changed && !this.userCamTop) || turned || !this.topFitK) this.fitTop(turned);
-    if (this.view === 'top') this.drawTop();
+    this.drawTop();
     // 3D
     if (this.state3d === 'ready' && this.el) {
-      if (this.w3dW !== w || this.w3dH !== hh) {
-        this.w3dW = w;
-        this.w3dH = hh;
+      const w3 = Math.round(r.width), h3 = Math.round(r.height);
+      if (this.w3dW !== w3 || this.w3dH !== h3) {
+        this.w3dW = w3;
+        this.w3dH = h3;
         this.el.resize();
         if (!this.userCam3d) this.fit3d();
       }

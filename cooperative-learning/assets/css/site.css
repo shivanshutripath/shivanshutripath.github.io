@@ -227,7 +227,7 @@ header[tabindex="-1"]:focus {
 
 @media (min-width: 769px) {
   .column-narrow {
-    width: 80%;
+    width: 100%;
   }
 }
 
@@ -395,7 +395,7 @@ header[tabindex="-1"]:focus {
 }
 
 .subtitle {
-  max-width: 54rem;
+  max-width: none;
   margin: 0 auto;
   font-size: 1.25rem;
   font-weight: 400;
@@ -428,7 +428,7 @@ header[tabindex="-1"]:focus {
 }
 
 .band .figure figcaption {
-  max-width: 50rem;
+  max-width: none;
   margin: 0.875rem auto 0.25rem;
   padding: 0 0.5rem;
   text-align: center;
@@ -470,7 +470,7 @@ header[tabindex="-1"]:focus {
 }
 
 .lead {
-  max-width: 70ch;
+  max-width: none;
   margin: 0 0 1.5rem;
   font-size: 1rem;
   line-height: 1.6;
@@ -1112,3 +1112,13 @@ header[tabindex="-1"]:focus {
   text-decoration: underline; text-underline-offset: 0.2em;
 }
 .chart .ch-data-btn:hover { color: #363636; }
+
+
+/* full lines: the title and the summary use the whole width instead of balanced short lines */
+.publication-title,
+.subtitle,
+.title,
+.band .figure figcaption,
+.lead {
+  text-wrap: wrap;
+}
