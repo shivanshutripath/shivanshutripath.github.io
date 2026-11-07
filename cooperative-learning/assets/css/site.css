@@ -518,136 +518,272 @@ header[tabindex="-1"]:focus {
   text-align: center;
 }
 
-.diagram {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin: 0 auto;
-  aspect-ratio: 900 / 272;
+/* The three layers at one agent: HTML boxes, math by KaTeX. Wide screens: the input, the agent
+   frame with its three boxes, the output, and under boxes 2 and 3 the links to the neighbors;
+   the links have the frame's columns and padding, so they sit under the centers of the boxes. */
+.pipe {
+  --pipe-ink: var(--ink-soft);
+  --pipe-top: 2.1rem;            /* frame padding above the boxes: the "agent i" label */
+  --pipe-bot: 0.9rem;
+  --pipe-x: 0.9rem;
+  --pipe-cols: minmax(0, 1fr) 2rem minmax(0, 1fr) 2rem minmax(0, 1fr);
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) 5.25rem;
+  color: var(--ink-soft);
   font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.pipe p {
+  margin: 0;
+}
+
+.pipe-agent {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--pipe-cols);
+  padding: var(--pipe-top) var(--pipe-x) var(--pipe-bot);
+  background: var(--bg-footer);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.pipe-agent-name {
+  position: absolute;
+  top: 0.55rem;
+  left: var(--pipe-x);
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+}
+
+.pipe-box {
+  min-width: 0;
+  padding: 0.75rem 0.9rem 0.85rem;
+  background: #fff;
+  border: 1.25px solid #c8c8c8;
+  border-radius: var(--radius);
+}
+
+.pipe .pipe-h {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
   color: var(--ink);
-  overflow: visible;
-}
-
-.diagram .pl-narrow {
-  display: none;
-}
-
-/* below 900px the left-to-right drawing would scale its text under 13px: stack it */
-@media (max-width: 899px) {
-  .diagram {
-    max-width: 25rem;
-    aspect-ratio: 320 / 530;
-  }
-
-  .diagram .pl-wide {
-    display: none;
-  }
-
-  .diagram .pl-narrow {
-    display: inline;
-  }
-}
-
-.diagram text {
-  font-family: var(--font-sans);
-}
-
-.diagram .dg-frame {
-  fill: var(--bg-footer);
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-.diagram .dg-box {
-  fill: #fff;
-  stroke: #c8c8c8;
-  stroke-width: 1.25;
-}
-
-.diagram .dg-nb {
-  fill: #eef6fb;
-  stroke: var(--c-coop);
-  stroke-width: 1.25;
-}
-
-.diagram .dg-sep {
-  fill: none;
-  stroke: var(--line-soft);
-  stroke-width: 1;
-}
-
-.diagram .dg-num {
-  fill: var(--ink);
-}
-
-.diagram .dg-numt {
-  fill: #fff;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.diagram .dg-h {
-  fill: var(--ink);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.diagram .dg-t {
-  fill: var(--ink-soft);
-  font-size: 14px;
+.pipe .step-num {
+  width: 1.45rem;
+  height: 1.45rem;
+  font-size: 0.75rem;
 }
 
-.diagram .dg-s {
-  fill: var(--ink-faint);
-  font-size: 13px;
+.pipe-coop,
+.pipe-msg-in {
+  color: var(--c-coop);
 }
 
-.diagram text.dg-math,
-.diagram text.dg-acc {
-  fill: var(--ink);
+/* arrows: a line with a triangular head */
+.pipe-arrow {
+  position: relative;
+  align-self: center;
+  height: 1.5px;
+  margin-right: 1px;
+  background: var(--pipe-ink);
 }
 
-.diagram .dg-coop-t,
-.diagram text.dg-coop-m {
-  fill: var(--c-coop);
+.pipe-arrow::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  border-style: solid;
+  border-width: 4.5px 0 4.5px 8px;
+  border-color: transparent transparent transparent var(--pipe-ink);
+  transform: translateY(-50%);
 }
 
-.diagram .dg-m {
-  font-family: KaTeX_Math, "Computer Modern Serif", "Times New Roman", serif;
-  font-style: italic;
+/* input and output: the label over an arrow at the height of the boxes' centers */
+.pipe-in,
+.pipe-out {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  padding: var(--pipe-top) 0 var(--pipe-bot);
 }
 
-.diagram .dg-u {
-  font-family: KaTeX_Main, "Computer Modern Serif", "Times New Roman", serif;
-  font-style: normal;
+.pipe-io {
+  align-self: end;
+  padding-bottom: 0.35rem;
+  line-height: 1.35;
 }
 
-.diagram .dg-c {
-  font-family: KaTeX_Caligraphic, "Computer Modern Serif", serif;
-  font-style: normal;
+.pipe-in .pipe-arrow,
+.pipe-out .pipe-arrow {
+  grid-row: 2;
 }
 
-.diagram .dg-arrow {
-  fill: none;
-  stroke: var(--ink-soft);
-  stroke-width: 1.5;
+.pipe-in .pipe-arrow {
+  margin-right: calc(-1 * var(--pipe-x) - 1px);    /* up to box 1, across the frame's padding */
 }
 
-.diagram text.dg-arrow-t,
-.diagram .dg-ah {
-  fill: var(--ink-soft);
+.pipe-out .pipe-io {
+  padding-left: 0.75rem;
 }
 
-.diagram .dg-msg {
-  fill: none;
-  stroke: var(--c-coop);
-  stroke-width: 1.5;
-  stroke-dasharray: 5 4;
+.pipe-out .pipe-arrow {
+  margin-left: calc(-1 * var(--pipe-x));           /* from box 3, across the frame's padding */
 }
 
-.diagram .dg-ah-coop {
-  fill: var(--c-coop);
+/* the links to the neighbors */
+.pipe-net {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: var(--pipe-cols);
+  margin-top: calc(-1 * var(--pipe-bot) - 1px);    /* the links leave from the bottoms of the boxes */
+  padding: 0 var(--pipe-x);
+}
+
+.pipe-link {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  min-height: 5.25rem;
+}
+
+.pipe-link.is-2 {
+  grid-column: 3;
+}
+
+.pipe-link.is-3 {
+  grid-column: 5;
+}
+
+.pipe-dash {
+  position: relative;
+  margin: 8px 0;
+  border-left: 1.5px dashed var(--c-coop);
+}
+
+.pipe-dash::before,
+.pipe-dash::after {
+  content: "";
+  position: absolute;
+  left: -5.25px;
+  border-style: solid;
+}
+
+.pipe-dash::before {
+  top: -8px;
+  border-width: 0 4.5px 8px;
+  border-color: transparent transparent var(--c-coop);
+}
+
+.pipe-dash::after {
+  bottom: -8px;
+  border-width: 8px 4.5px 0;
+  border-color: var(--c-coop) transparent transparent;
+}
+
+.pipe-link-t {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 0.7rem);
+  color: var(--c-coop);
+  line-height: 1.35;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.pipe-link-t small {
+  display: block;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+}
+
+.pipe-nb {
+  grid-column: 3 / 6;
+  padding: 0.55rem 1rem;
+  color: var(--c-coop);
+  text-align: center;
+  background: #eef6fb;
+  border: 1.25px solid var(--c-coop);
+  border-radius: var(--radius);
+}
+
+.pipe-msg-in {
+  display: none;
+}
+
+/* below 900px the boxes would be too narrow side by side: one under the other, and the
+   messages to the neighbors inside boxes 2 and 3 */
+@media (max-width: 899px) {
+  .pipe {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+
+  .pipe-in,
+  .pipe-out {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    text-align: center;
+  }
+
+  .pipe-out {
+    flex-direction: column-reverse;
+  }
+
+  .pipe-io,
+  .pipe-out .pipe-io {
+    align-self: center;
+    padding: 0;
+  }
+
+  .pipe-agent {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 2rem 0.75rem 0.75rem;
+  }
+
+  .pipe-arrow,
+  .pipe-in .pipe-arrow,
+  .pipe-out .pipe-arrow {
+    justify-self: center;
+    width: 1.5px;
+    height: 1.4rem;
+    margin: 0;
+  }
+
+  .pipe-arrow::after {
+    top: auto;
+    right: auto;
+    bottom: -1px;
+    left: 50%;
+    border-width: 8px 4.5px 0;
+    border-color: var(--pipe-ink) transparent transparent;
+    transform: translateX(-50%);
+  }
+
+  .pipe-net {
+    display: none;
+  }
+
+  .pipe-msg-in {
+    display: block;
+    margin-top: 0.55rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid var(--line-soft);
+    font-size: 0.8125rem;
+  }
 }
 
 .steps {
