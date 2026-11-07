@@ -156,15 +156,18 @@
 .rx-day-group { display: grid; gap: 0.2rem; }
 .rx-day-title { color: var(--rx-faint); font-size: 0.72rem; }
 
-.rx-top {
+/* the controls and, beside them on wide screens, the map, which picks a region too */
+.rx-pick {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
-@media (min-width: 760px) {
-  .rx-top { grid-template-columns: minmax(0, 23rem) minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .rx-pick { grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); }
+  /* region, shopper and day one under the other, about as tall as the map beside them */
+  .rx-pick .rx-controls { flex-direction: column; flex-wrap: nowrap; gap: 1rem; }
 }
-.rx-map, .rx-user, .rx-feeds-panel, .rx-strip-panel {
+.rx-map, .rx-feeds-panel, .rx-strip-panel {
   margin: 0;
   padding: 0.9rem 1rem 1rem;
   border: 1px solid var(--rx-line);
@@ -184,13 +187,6 @@
 .rx-node text.rx-city { fill: var(--rx-faint); font-size: 10px; font-weight: 400; }
 .rx-node[aria-pressed="true"] text.rx-city { fill: var(--rx-head); font-weight: 700; }
 .rx-map-note { margin: 0.4rem 0 0; color: var(--rx-faint); font-size: 0.8rem; }
-
-.rx-user-id { margin: 0; color: var(--rx-head); font-size: 1.05rem; font-weight: 600; }
-.rx-user-id span { color: var(--rx-faint); font-weight: 400; }
-.rx-user p { margin: 0.45rem 0 0; font-size: 0.95rem; line-height: 1.5; }
-.rx-stat b { font-weight: 700; }
-.rx-b-coop { color: var(--rx-coop); }
-.rx-b-local { color: var(--rx-local); }
 
 .rx-feeds-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
 .rx-feeds-head .rx-panel-title { margin: 0; }

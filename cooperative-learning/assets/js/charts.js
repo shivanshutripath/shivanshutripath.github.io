@@ -1024,6 +1024,13 @@
   };
   // a series of a data block: T[key] plus its accessor and options
   const S = (key, get, opt) => Object.assign({ key }, T[key], { get }, opt || {});
+  // the points of a data block whose x passes keep(x), with their interquartile ranges
+  const atX = (d, keep) => {
+    const idx = d.x.map((x, j) => (keep(x) ? j : -1)).filter((j) => j >= 0);
+    const o = Object.assign({}, d);
+    for (const k of ['x', 'median', 'q25', 'q75']) if (d[k]) o[k] = idx.map((j) => d[k][j]);
+    return o;
+  };
 
   const DEFS = {
     'a-rmse': {
@@ -1055,48 +1062,33 @@
       tableCaption: 'Identical agents, *N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F}, median over 50 trials and the *m* agents, interquartile range below; *σ* is the contraction factor of the graph.',
     },
     'b-rmse': {
-      alt: 'Line chart: tracking RMSE versus N (log scale), medians with interquartile bands over 50 trials, with the oracle that knows A.',
+      alt: 'Line chart: tracking RMSE versus N (log scale), medians with interquartile bands over 50 trials, together and alone.',
       x: XN,
       panels: [{ id: 'main', y: { type: 'linear', title: 'tracking RMSE', tip: 'tracking RMSE', domain: [0.009, 0.037] }, series: [
         S('coop3', (R) => R.B.rmse.coop3, { on: true, band: true }),
         S('local', (R) => R.B.rmse.local, { on: true, band: true }),
-        S('oracleA', (R) => R.B.rmse.oracleA, { on: true }),
-        S('exact', (R) => R.B.rmse.exact, { extra: true }),
-        S('centralized', (R) => R.B.rmse.centralized, { extra: true }),
-        S('oracleKF', (R) => R.B.rmse.oracleKF, { extra: true }),
-        S('persistence', (R) => R.B.rmse.persistence, { extra: true }),
-        S('coop1', (R) => R.B.rmse.coop1, { extra: true }),
       ] }],
       tableCaption: 'Tracking RMSE: median over 50 trials, interquartile range below.',
     },
     'b-id': {
-      alt: 'Line chart: identification error versus N, both axes log scale, medians with interquartile bands over 50 trials and 8 servers, with pooled least squares.',
+      alt: 'Line chart: identification error versus N, both axes log scale, medians with interquartile bands over 50 trials and 8 servers, together and alone.',
       x: XN,
       panels: [{ id: 'main', y: Object.assign({}, Y_ID, { domain: [0.0105, 0.6], ticks: [0.02, 0.05, 0.1, 0.2, 0.5] }), series: [
         S('coop3', (R) => R.B.id.coop3, { on: true, band: true }),
         S('local', (R) => R.B.id.local, { on: true, band: true }),
-        S('pooledLS', (R) => R.B.id.pooledLS, { on: true }),
-        S('exact', (R) => R.B.id.exact, { extra: true }),
-        S('coop1', (R) => R.B.id.coop1, { extra: true }),
       ] }],
       tableCaption: '‖*Â*^{(*i*)} − *A*‖_{F}: median over 50 trials and 8 servers, interquartile range below.',
     },
     'b-tau': {
-      alt: 'Line chart: identification error versus the number tau of consensus rounds at N = 100 (log scale), with the value of exact averaging.',
+      alt: 'Line chart: identification error versus the number tau of consensus rounds at N = 100 (log scale): alone at tau = 0, together for tau = 1 to 10.',
       x: { type: 'linear', domain: [-0.5, 10.5], ticks: [0, 1, 2, 3, 5, 10], name: '*τ*', title: '*τ*', math: true },
       panels: [
         { id: 'main', y: Object.assign({}, Y_ID, { domain: [0.0105, 0.6], ticks: [0.02, 0.05, 0.1, 0.2, 0.5] }), series: [
-          { key: 'coop', sty: 'coop', label: 'together', on: true, band: true, get: (R) => R.B.tau.id },
-          { key: 'exact', sty: 'exactL', label: 'exact averaging', on: true, hline: true, get: (R) => R.B.tau.idExact },
-        ] },
-        { id: 'rmse', toggle: 'rmsePanel', y: { type: 'linear', title: 'tracking RMSE', tip: 'tracking RMSE' }, series: [
-          { key: 'coopR', link: 'coop', sty: 'coop', label: 'together', get: (R) => R.B.tau.rmse },
-          { key: 'exactR', link: 'exact', sty: 'exactL', label: 'exact averaging', hline: true,
-            get: (R) => { const e = R.B.rmse.exact, j = e.x.indexOf(100); return { x: [0, 10], median: [e.median[j], e.median[j]], src: e.src }; } },
+          S('coop3', (R) => atX(R.B.tau.id, (x) => x > 0), { key: 'coop', on: true, band: true }),
+          S('local', (R) => atX(R.B.tau.id, (x) => x === 0), { on: true, band: true }),
         ] },
       ],
-      toggles: [{ key: 'rmsePanel', sty: 'panel', label: 'tracking RMSE', extra: true, panel: true }],
-      tableCaption: '*N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F} (median over 50 trials and 8 servers, interquartile range below) and tracking RMSE (median over 50 trials). Exact averaging is *τ* = ∞.',
+      tableCaption: '*N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F}, median over 50 trials and 8 servers, interquartile range below. *τ* = 0 is alone.',
     },
     'r-simple': {
       requires: 'REC',

@@ -20,20 +20,20 @@
   <link rel="preload" href="vendor/fonts/cmunbx.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="vendor/fonts/cmunrm.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/fonts/cmu-serif.css">
-  <link rel="stylesheet" href="assets/css/site.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/site.css?v=20261106e">
   <link rel="stylesheet" href="assets/css/charts.css?v=20261106c">
   <link rel="stylesheet" href="assets/css/webots-sim.css?v=20261106d">
   <link rel="stylesheet" href="assets/css/playground.css?v=20261106c">
-  <link rel="stylesheet" href="assets/css/recommendation.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/recommendation.css?v=20261106e">
 
   <script defer src="vendor/katex/katex.min.js"></script>
   <script defer src="vendor/katex/contrib/auto-render.min.js"></script>
   <script defer src="data/results.js?v=20261106c"></script>
   <script defer src="data/recommendation.js?v=20261106c"></script>
-  <script defer src="assets/js/charts.js?v=20261106d"></script>
+  <script defer src="assets/js/charts.js?v=20261106e"></script>
   <script defer src="assets/js/engine.js?v=20261106c"></script>
   <script defer src="assets/js/playground.js?v=20261106c"></script>
-  <script defer src="assets/js/recommendation.js?v=20261106c"></script>
+  <script defer src="assets/js/recommendation.js?v=20261106e"></script>
   <script type="module" src="assets/js/webots-sim.js?v=20261106d"></script>
   <script defer src="assets/js/site.js?v=20261106c"></script>
 
@@ -134,17 +134,17 @@
     <div class="steps">
       <div class="step">
         <h3><span class="step-num">1</span>Reconstruct</h3>
-        <p>Estimate the latent parameter from each window of \(k\) noisy gradients.</p>
+        <p>Estimate \(\theta_i\) from each window of \(k\) noisy gradients.</p>
         <p class="eq">\(\tilde\theta_i(t)=K_{i,t}\,\bar y_{i,t}\)</p>
       </div>
       <div class="step">
         <h3><span class="step-num">2</span>Identify together</h3>
-        <p>Average instrumental-variable moments over the network for \(\tau\) rounds. The instrument \(\tilde\theta_i(t-k)\) removes the errors-in-variables bias of least squares.</p>
+        <p>Average the IV moments over the network for \(\tau\) rounds.</p>
         <p class="eq">\(\hat A^{(i)}=\hat M_1^{(i)}(\tau)\,\hat M_0^{(i)}(\tau)^{-1}\)</p>
       </div>
       <div class="step">
         <h3><span class="step-num">3</span>Track</h3>
-        <p>Roll the last estimate forward with \(\hat A^{(i)}\) and run gradient tracking on the forecast gradients.</p>
+        <p>Forecast with \(\hat A^{(i)}\) and run gradient tracking.</p>
         <p class="eq">\(x_i(t+1)=\sum_j W_{ij}\big(x_j(t)-\alpha\,s_j(t)\big)\)</p>
       </div>
     </div>
@@ -180,11 +180,11 @@
     </div>
 
     <h3 class="subtitle-3">Decentralized recommendation with regional servers</h3>
-    <p class="lead">Eight regional servers agree on boosts for three product genres while the interests of their users drift with shared, unknown dynamics. The costs are logistic, not quadratic. Same trials and horizon. <a href="#recommendation">What this means for the products each user sees.</a></p>
+    <p class="lead">Eight regional servers agree on boosts for three product genres while their users&rsquo; interests drift with shared, unknown dynamics; the costs are logistic, not quadratic. Same trials and horizon. <a href="#recommendation">What each user sees.</a></p>
     <div class="chart-row">
-      <figure class="figure"><div class="chart" data-chart="b-rmse" role="img" aria-label="Recommendation: tracking RMSE versus N"></div><figcaption>(a) Tracking RMSE: 24–37% lower together for every \(N\).</figcaption></figure>
-      <figure class="figure"><div class="chart" data-chart="b-id" role="img" aria-label="Recommendation: identification error versus N"></div><figcaption>(b) Identification error: 4.7–5.9 times lower together, between 0.022 and 0.026 for every \(N\).</figcaption></figure>
-      <figure class="figure"><div class="chart" data-chart="b-tau" role="img" aria-label="Recommendation: identification error versus consensus rounds tau"></div><figcaption>(c) Consensus rounds at \(N=100\) (\(\sigma=0.68\)): from 0.141 for \(\tau=0\) to 0.022 for \(\tau=5\), the value of exact averaging.</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="b-rmse" role="img" aria-label="Recommendation: tracking RMSE versus N, together and alone"></div><figcaption>(a) Tracking RMSE: 24–37% lower together for every \(N\).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="b-id" role="img" aria-label="Recommendation: identification error versus N, together and alone"></div><figcaption>(b) Identification error: 4.7–5.9 times lower together.</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="b-tau" role="img" aria-label="Recommendation: identification error versus consensus rounds tau, alone at tau = 0 and together for tau from 1 to 10"></div><figcaption>(c) Consensus rounds \(\tau\) at \(N=100\): 0.141 alone (\(\tau=0\)), 0.024 together (\(\tau=3\)).</figcaption></figure>
     </div>
   </div>
 </section>
@@ -192,35 +192,35 @@
 <section class="section" id="recommendation">
   <div class="container is-max-desktop">
     <h2 class="title">Recommendation systems</h2>
-    <p class="lead">Here is the method at work in an online store. The store has shoppers in eight regions, and each region has its own server. Privacy rules keep each region&rsquo;s shopping data on its own server. Together, the servers decide how strongly to promote three kinds of products: outdoor, home and tech. What shoppers want changes over time, so the promotion has to change too.</p>
+    <p class="lead">An online store has shoppers in eight regions, each with its own server that keeps its data private. Together, the servers decide how strongly to promote outdoor, home and tech products as shoppers&rsquo; interests change.</p>
     <ol class="rx-steps">
       <li class="rx-step">
         <span class="rx-step-n" aria-hidden="true">1</span>
         <h3>Days 0 to 99: watch</h3>
-        <p>Every day, each server looks at 100 visits from its own region and estimates how much its shoppers want each kind of product.</p>
+        <p>Each server estimates its shoppers&rsquo; interests from 100 visits a day.</p>
       </li>
       <li class="rx-step">
         <span class="rx-step-n" aria-hidden="true">2</span>
         <h3>Day 100: learn together</h3>
-        <p>The data stop. The servers send their neighbors small summaries, never shopper data, and learn together how interests change.</p>
+        <p>The data stop. Servers share small summaries, never shopper data, and learn how interests change.</p>
       </li>
       <li class="rx-step">
         <span class="rx-step-n" aria-hidden="true">3</span>
         <h3>Days 100 to 299: predict</h3>
-        <p>Without new data, each server predicts what its shoppers will want and keeps adjusting the promotion.</p>
+        <p>With no new data, each server predicts its shoppers&rsquo; interests and adjusts the promotion.</p>
       </li>
     </ol>
 
     <h3 class="subtitle-3">How often do shoppers see the best products?</h3>
-    <p class="lead">Each shopper sees a list of 8 products. The best list is the one the store would show if it knew what every region wants right now. With only 30 days of data before the stop:</p>
+    <p class="lead">Each shopper sees 8 products. The best list is what the store would show if it knew every region&rsquo;s current interests. With 30 days of data before the stop:</p>
     <div class="rx-tiles is-two">
-      <div class="rx-tile is-coop"><span class="rx-tile-n">94%</span><span class="rx-tile-t">of the daily lists are the best ones when the servers <b>learn together</b></span></div>
+      <div class="rx-tile is-coop"><span class="rx-tile-n">94%</span><span class="rx-tile-t">of daily lists are the best ones when the servers <b>learn together</b></span></div>
       <div class="rx-tile is-local"><span class="rx-tile-n">90%</span><span class="rx-tile-t">when <b>each server learns alone</b></span></div>
     </div>
-    <figure class="figure rx-chart-main"><div class="chart" data-chart="r-simple" role="img" aria-label="Share of the daily lists that are the best ones, versus the days of data before the stop, for learning together and each server alone"></div><figcaption>With more days of data both do better. Learning together stays ahead, most of all when data are scarce. Each point is the median of 50 simulated runs; the bands show the middle half of the runs.</figcaption></figure>
+    <figure class="figure rx-chart-main"><div class="chart" data-chart="r-simple" role="img" aria-label="Share of the daily lists that are the best ones, versus the days of data before the stop, for learning together and each server alone"></div><figcaption>More data help both; learning together stays ahead, most when data are scarce. Medians of 50 runs; bands show the middle half.</figcaption></figure>
 
     <h3 class="subtitle-3">See it for one shopper</h3>
-    <p class="lead">Pick a region and a day. Each column shows the 8 products a shopper sees; a product outlined in red is not on the best list.</p>
+    <p class="lead">Pick a region, a shopper and a day. Red outlines mark products that are not on the best list.</p>
   </div>
   <div class="container is-wide">
     <div id="rec-explorer" class="rx"></div>
@@ -229,12 +229,12 @@
     <details class="rx-details" id="recommendation-details">
       <summary>Details for researchers</summary>
       <div class="rx-details-body">
-        <p>The store is case study (B) of the paper, made concrete with simulated shoppers and products; the model, the data the servers receive and the algorithm are the paper&rsquo;s. The promotion is the vector of genre boosts \(x\), logit shifts added to the score of every product of a genre in the shared ranking model. A shopper&rsquo;s list is the top 8 of 32 products, ranked by the product&rsquo;s base score, the shopper&rsquo;s taste for it and affinity for its genre, and the boost of its genre at the shopper&rsquo;s server; the best list uses the minimizer \(x^\star(t)\) of the team cost. A list counts as the best one when it holds the same 8 products, in any order. The numbers cover days \(N+50\) to \(N+199\), the paper&rsquo;s window, over 4,000 shoppers and the paper&rsquo;s 50 Monte Carlo trials per \(N\). In the trial shown above, the trial of the paper&rsquo;s Figure 3(b), the lists are the best ones on 93.4% of the shopper-days together and 90.6% alone.</p>
+        <p>Case study (B) of the paper with simulated shoppers and products; the model, the data and the algorithm are the paper&rsquo;s. The promotion is the vector of genre boosts \(x\), logit shifts added to every product of a genre. A list is the top 8 of 32 products, ranked by base score, the shopper&rsquo;s taste and genre affinity, and the genre boost at the shopper&rsquo;s server; the best list uses the minimizer \(x^\star(t)\). A list counts as best if it holds the same 8 products, in any order. Days \(N+50\) to \(N+199\), 4,000 shoppers, 50 trials per \(N\). In the trial above (the paper&rsquo;s Figure 3(b)): 93.4% best lists together, 90.6% alone.</p>
         <div class="chart-row is-two">
-          <figure class="figure"><div class="chart" data-chart="r-forecast" role="img" aria-label="Recommendation: RMSE of the interest forecasts versus N, together and alone"></div><figcaption>(a) Forecasts of the interests: 25&ndash;50% lower RMSE together than alone.</figcaption></figure>
-          <figure class="figure"><div class="chart" data-chart="r-mix" role="img" aria-label="Recommendation: error of the genre mix of the lists versus N, together and alone"></div><figcaption>(b) Genre mix of the lists: an error of 0.27&ndash;0.34 percentage points together, against 0.36&ndash;0.55 alone.</figcaption></figure>
+          <figure class="figure"><div class="chart" data-chart="r-forecast" role="img" aria-label="Recommendation: RMSE of the interest forecasts versus N, together and alone"></div><figcaption>(a) Interest forecasts: 25&ndash;50% lower RMSE together.</figcaption></figure>
+          <figure class="figure"><div class="chart" data-chart="r-mix" role="img" aria-label="Recommendation: error of the genre mix of the lists versus N, together and alone"></div><figcaption>(b) Genre-mix error: 0.27&ndash;0.34 pp together, 0.36&ndash;0.55 alone.</figcaption></figure>
         </div>
-        <p class="rx-fine">Together means \(\tau=3\) consensus rounds; alone means \(\tau=0\), each server estimates \(A\) by itself. The code is <code>recommendation_demo/</code> in the code download.</p>
+        <p class="rx-fine">Together: \(\tau=3\) consensus rounds; alone: \(\tau=0\). Code: <code>recommendation_demo/</code> in the code download.</p>
       </div>
     </details>
   </div>

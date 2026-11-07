@@ -653,15 +653,8 @@ header[tabindex="-1"]:focus {
 .steps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-@media (min-width: 900px) {
-  .steps {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
+  gap: 0.75rem;
+  margin-top: 1.75rem;
 }
 
 .step {
@@ -714,6 +707,44 @@ header[tabindex="-1"]:focus {
   text-align: center;
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+/* wide screens: one row per layer (number and name, one line of text, the equation), with the
+   three columns lined up across the rows */
+@media (min-width: 900px) {
+  .step {
+    display: grid;
+    grid-template-columns: 12.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1.5rem;
+    padding: 0.75rem 1.25rem;
+  }
+
+  @supports (grid-template-columns: subgrid) {
+    .steps {
+      grid-template-columns: max-content minmax(0, 1fr) max-content;
+    }
+
+    .step {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+    }
+  }
+
+  .step h3,
+  .step p {
+    margin: 0;
+  }
+
+  /* the equation column is as wide as the widest equation: nothing to scroll */
+  .step .eq {
+    margin: 0;
+    padding: 0.25rem 0;
+    border-top: 0;
+    text-align: right;
+    overflow: visible;
+    background: none;
+  }
 }
 
 .eq .katex {

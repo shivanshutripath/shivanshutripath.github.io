@@ -14,10 +14,11 @@
   const NS = 'http://www.w3.org/2000/svg';
   const GENRE_VAR = ['var(--rx-outdoor)', 'var(--rx-home)', 'var(--rx-tech)', 'var(--rx-essentials)'];
   const COLS = [
-    { key: 'ideal', label: 'Best list', note: 'if the store knew every region’s interests', color: 'var(--rx-ideal)' },
-    { key: 'coop3', label: 'Learning together', note: 'the servers share summaries', color: 'var(--rx-coop)' },
+    { key: 'ideal', label: 'Best list', note: 'if the store knew all interests', color: 'var(--rx-ideal)' },
+    { key: 'coop3', label: 'Learning together', note: 'servers share summaries', color: 'var(--rx-coop)' },
     { key: 'local', label: 'Each server alone', note: 'no sharing', color: 'var(--rx-local)' },
   ];
+  const KIND_HINT = { typical: 'tastes near the region’s average', contrast: 'two products nearly tied for 8th place' };
   const STRIP = [
     { key: 'coop3', label: 'Learning together', color: 'var(--rx-coop)' },
     { key: 'local', label: 'Each server alone', color: 'var(--rx-local)' },
@@ -37,7 +38,6 @@
     if (parent) parent.appendChild(e);
     return e;
   }
-  const count = (bits) => { let n = 0; for (let k = 0; k < bits.length; k++) if (bits[k] === '1') n++; return n; };
   const days = (n) => n + (n === 1 ? ' day' : ' days');
 
   function init() {
@@ -57,8 +57,9 @@
     const state = { region: userOf('EU', 'contrast') ? 'EU' : R.regions[0].code, kind: 'contrast', day: null };
     state.day = defaultDay(userOf(state.region, state.kind));
 
-    // ------------------------------------------------------------ controls
-    const ctr = el('div', { class: 'rx-controls', role: 'group', 'aria-label': 'Choose a region, a shopper and a day' }, mount);
+    // ------------------------------------------------------------ controls, and the map next to them
+    const pick = el('div', { class: 'rx-pick' }, mount);
+    const ctr = el('div', { class: 'rx-controls', role: 'group', 'aria-label': 'Choose a region, a shopper and a day' }, pick);
     const fRegion = el('div', { class: 'rx-field' }, ctr);
     el('span', { class: 'rx-label', id: 'rx-l-region' }, fRegion, 'Region');
     const regionChips = el('div', { class: 'rx-chips', role: 'group', 'aria-labelledby': 'rx-l-region' }, fRegion);
@@ -73,6 +74,7 @@
       const b = el('button', { type: 'button', class: 'rx-chip', 'data-kind': kind }, userChips, lab);
       b.addEventListener('click', () => { state.kind = kind; state.day = defaultDay(userOf(state.region, kind)); render(); });
     }
+    const userHint = el('span', { class: 'rx-hint' }, fUser);
     const fDay = el('div', { class: 'rx-field' }, ctr);
     el('span', { class: 'rx-label', id: 'rx-l-day' }, fDay, 'Day');
     const dayChips = el('div', { class: 'rx-days', role: 'group', 'aria-labelledby': 'rx-l-day' }, fDay);
@@ -83,12 +85,11 @@
       render();
     }
 
-    // ------------------------------------------------------------ the servers and the shopper
-    const top = el('div', { class: 'rx-top' }, mount);
-    const map = el('figure', { class: 'rx-map' }, top);
+    // ------------------------------------------------------------ the servers
+    const map = el('figure', { class: 'rx-map' }, pick);
     el('p', { class: 'rx-panel-title' }, map, 'The eight regional servers');
     const VW = 400, VH = 252, cx = 200, cy = 126, RR = 88;
-    const msvg = sv('svg', { viewBox: '0 0 ' + VW + ' ' + VH, role: 'group', 'aria-label': 'The eight regional servers. A line joins two servers that exchange messages. Pick a server to see its region.' }, map);
+    const msvg = sv('svg', { viewBox: '0 0 ' + VW + ' ' + VH, role: 'group', 'aria-label': 'The eight regional servers; lines join servers that exchange summaries. Pick a server to see its region.' }, map);
     const pos = {};
     for (const r of R.regions) {
       const a = (22.5 + 45 * (r.server - 1)) * Math.PI / 180;
@@ -110,14 +111,12 @@
       g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pickRegion(r.code); } });
       nodes[r.code] = g;
     }
-    el('p', { class: 'rx-map-note' }, map, 'A line joins two servers that exchange messages. No shopper data ever travel along a line.');
-
-    const card = el('div', { class: 'rx-user', 'aria-live': 'polite' }, top);
+    el('p', { class: 'rx-map-note' }, map, 'Lines join servers that exchange summaries; no shopper data travel.');
 
     // ------------------------------------------------------------ the lists and the strip
     const fp = el('div', { class: 'rx-feeds-panel' }, mount);
     const fHead = el('div', { class: 'rx-feeds-head' }, fp);
-    const fTitle = el('p', { class: 'rx-panel-title' }, fHead);
+    const fTitle = el('p', { class: 'rx-panel-title', 'aria-live': 'polite' }, fHead);
     const feeds = el('div', { class: 'rx-feeds' }, fp);
     const lg = el('ul', { class: 'rx-legend' }, fp);
     R.genres.forEach((g, k) => {
@@ -125,10 +124,10 @@
       el('span', { class: 'rx-gkey', style: 'background:' + GENRE_VAR[k] }, li);
       li.appendChild(document.createTextNode(g));
     });
-    { const li = el('li', null, lg); el('span', { class: 'rx-out-key' }, li); li.appendChild(document.createTextNode('should not be on the list')); }
+    { const li = el('li', null, lg); el('span', { class: 'rx-out-key' }, li); li.appendChild(document.createTextNode('not on the best list')); }
 
     const sp = el('div', { class: 'rx-strip-panel' }, mount);
-    el('p', { class: 'rx-panel-title' }, sp, 'Days after the data stop on which this shopper’s list was not the best one');
+    el('p', { class: 'rx-panel-title' }, sp, 'Days this shopper’s list was not the best one');
     const ssvg = sv('svg', { role: 'img' }, sp);
     let stripW = 0;
     const stripWidth = () => Math.max(260, Math.round(sp.clientWidth - 32));   // the panel's content box
@@ -155,27 +154,14 @@
         }
       }
 
-      // the shopper
-      const nTog = count(u.strip.coop3), nAlone = count(u.strip.local), nAll = u.strip.coop3.length;
-      card.replaceChildren();
-      const idp = el('p', { class: 'rx-user-id' }, card, 'Shopper ' + u.id + ' ');
-      el('span', null, idp, '· ' + reg.name + ' (server in ' + reg.hub + ')');
-      el('p', { class: 'rx-kind' }, card, u.kind === 'typical'
-        ? 'A typical shopper of the region: their tastes are close to the region’s average.'
-        : 'A borderline shopper: two products are almost tied for 8th place on their list, so a small error in the promotion swaps them.');
-      const stat = el('p', { class: 'rx-stat' }, card);
-      stat.appendChild(document.createTextNode('In the ' + nAll + ' days after the data stop, their list was not the best one on '));
-      el('b', { class: 'rx-b-coop' }, stat, days(nTog));
-      stat.appendChild(document.createTextNode(' with learning together, and on '));
-      el('b', { class: 'rx-b-local' }, stat, days(nAlone));
-      stat.appendChild(document.createTextNode(' with each server alone.'));
+      userHint.textContent = KIND_HINT[u.kind] || '';
 
       // the lists
       const F = u.feeds[String(state.day)];
       fTitle.replaceChildren();
-      fTitle.appendChild(document.createTextNode('What shopper ' + u.id + ' sees on day ' + state.day + ' '));
+      fTitle.appendChild(document.createTextNode('What this shopper in ' + reg.name + ' sees on day ' + state.day + ' '));
       el('span', { class: 'rx-hint' }, fTitle, state.day < N
-        ? '(data still coming in, so every method shows the same list)'
+        ? '(data still coming in: together and alone agree)'
         : '(' + days(state.day - N + 1) + ' after the data stop)');
       const best = new Set(F.ideal.p);
       feeds.replaceChildren();
@@ -187,7 +173,7 @@
         el('span', { class: 'rx-key', style: 'background:' + m.color }, h);
         el('span', null, h, m.label);
         el('p', { class: 'rx-col-note' }, col, m.note);
-        const ol = el('ol', { class: 'rx-list', 'aria-label': m.label + ': the 8 products shopper ' + u.id + ' sees' }, col);
+        const ol = el('ol', { class: 'rx-list', 'aria-label': m.label + ': the 8 products this shopper sees' }, col);
         let wrong = 0;
         f.p.forEach((pi, k) => {
           const pr = R.products[pi];
@@ -197,11 +183,11 @@
           el('span', { class: 'rx-rank' }, li, String(k + 1));
           el('span', { class: 'rx-bar', style: 'background:' + GENRE_VAR[pr[2]] }, li);
           const nm = el('span', { class: 'rx-name' }, li, pr[1]);
-          if (isOut) el('span', { class: 'rx-sr' }, nm, ' (should not be on the list)');
+          if (isOut) el('span', { class: 'rx-sr' }, nm, ' (not on the best list)');
         });
         if (m.key !== 'ideal') {
           el('p', { class: 'rx-verdict' + (wrong ? ' is-bad' : ' is-good') }, col,
-            wrong ? wrong + (wrong === 1 ? ' product differs from the best list' : ' products differ from the best list') : 'Same products as the best list');
+            wrong ? (wrong === 1 ? '1 product differs' : wrong + ' products differ') : 'Same as the best list');
         }
       }
       drawStrip(u);
@@ -260,8 +246,8 @@
       }
       const SH = ya + 24;
       ssvg.setAttribute('viewBox', '0 0 ' + SW + ' ' + SH);
-      ssvg.setAttribute('aria-label', 'Days ' + from + '–' + to + ', after the data stop, on which the list of shopper ' + u.id +
-        ' was not the best one. ' + desc.join('; ') + '. The day shown above is ' + state.day + '.');
+      ssvg.setAttribute('aria-label', 'Days ' + from + '–' + to + ' (after the data stop) on which this shopper’s list was not the best one. ' +
+        desc.join('; ') + '. The day shown above is ' + state.day + '.');
       const hit = sv('rect', { class: 'rx-strip-hit', x: x0, y: 0, width: (x1 - x0).toFixed(1), height: ya + 2 }, ssvg);
       hit.addEventListener('click', (ev) => {
         const box = ssvg.getBoundingClientRect();
