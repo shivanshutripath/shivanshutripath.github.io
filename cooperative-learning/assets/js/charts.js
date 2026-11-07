@@ -1027,43 +1027,32 @@
 
   const DEFS = {
     'a-rmse': {
-      alt: 'Line chart: tracking RMSE in units of 10 m versus N (log scale), medians with interquartile bands over 50 trials.',
+      alt: 'Line chart: tracking RMSE in units of 10 m versus N (log scale), medians with interquartile bands over 50 trials, together and alone.',
       x: XN,
       panels: [{ id: 'main', y: Object.assign({}, Y_RMSE, { domain: [0.15, 0.72] }), series: [
         S('coop3', (R) => R.A.rmse.coop3, { on: true, band: true }),
         S('local', (R) => R.A.rmse.local, { on: true, band: true }),
-        S('exact', (R) => R.A.rmse.exact, { extra: true }),
-        S('oracleA', (R) => R.A.rmse.oracleA, { extra: true }),
-        S('centralized', (R) => R.A.rmse.centralized, { extra: true }),
-        S('oracleKF', (R) => R.A.rmse.oracleKF, { extra: true }),
-        S('persistence', (R) => R.A.rmse.persistence, { extra: true }),
-        S('coop1', (R) => R.A.rmse.coop1, { extra: true }),
       ] }],
       tableCaption: 'Tracking RMSE (10 m): median over 50 trials, interquartile range below.',
     },
     'a-id': {
-      alt: 'Line chart: identification error versus N, both axes log scale, medians with interquartile bands over 50 trials and 6 stations.',
+      alt: 'Line chart: identification error versus N, both axes log scale, medians with interquartile bands over 50 trials and 6 stations, together and alone.',
       x: XN,
       panels: [{ id: 'main', y: Object.assign({}, Y_ID, { domain: [0.003, 0.05], ticks: [0.005, 0.01, 0.02, 0.05] }), series: [
         S('coop3', (R) => R.A.id.coop3, { on: true, band: true }),
         S('local', (R) => R.A.id.local, { on: true, band: true }),
-        S('exact', (R) => R.A.id.exact, { extra: true }),
-        S('pooledLS', (R) => R.A.id.pooledLS, { extra: true }),
-        S('coop1', (R) => R.A.id.coop1, { extra: true }),
       ] }],
       tableCaption: '‖*Â*^{(*i*)} − *A*‖_{F}: median over 50 trials and 6 stations, interquartile range below.',
     },
     'a-m': {
-      alt: 'Line chart: identification error versus the number m of identical agents at N = 100, both axes log scale, with a 1/√m reference line and the contraction factor σ of each graph above the plot.',
+      alt: 'Line chart: identification error versus the number m of identical agents at N = 100, both axes log scale, together and alone, with the contraction factor σ of each graph above the plot.',
       x: { type: 'log', domain: [1.75, 36], ticks: [2, 4, 8, 16, 32], name: '*m*', title: '*m*', math: true },
       sigma: (R) => R.A.m_sweep.sigma,
       panels: [{ id: 'main', y: Object.assign({}, Y_ID, { domain: [0.0024, 0.05], ticks: [0.005, 0.01, 0.02, 0.05] }), series: [
         S('coop3', (R) => R.A.m_sweep.coop3, { on: true, band: true }),
         S('local', (R) => R.A.m_sweep.local, { on: true, band: true }),
-        { key: 'ref', sty: 'ref', label: '1/√*m*', on: true, get: (R) => R.A.m_sweep.ref },
-        S('exact', (R) => R.A.m_sweep.exact, { extra: true }),
       ] }],
-      tableCaption: 'Identical agents, *N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F}, median over 50 trials and the *m* agents, interquartile range below; *σ* is the contraction factor of the graph. The 1/√*m* line passes through exact averaging at *m* = 8.',
+      tableCaption: 'Identical agents, *N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F}, median over 50 trials and the *m* agents, interquartile range below; *σ* is the contraction factor of the graph.',
     },
     'b-rmse': {
       alt: 'Line chart: tracking RMSE versus N (log scale), medians with interquartile bands over 50 trials, with the oracle that knows A.',
@@ -1140,16 +1129,13 @@
       tableCaption: 'Mean absolute error of the genre shares of the lists (four genres, every region), in percentage points, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
     },
     'w-rmse': {
-      alt: 'Line chart: tracking RMSE in units of 10 m versus N, both axes log scale, medians with interquartile bands over the 20 runs of each N, with the oracle that knows A.',
+      alt: 'Line chart: tracking RMSE in units of 10 m versus N, both axes log scale, medians with interquartile bands over the 20 runs of each N, together and alone.',
       x: XN,
       panels: [{ id: 'main', y: Object.assign({}, Y_RMSE, { type: 'log' }), series: [
         S('coop3', (R) => R.W.rmse.coop, { key: 'coop', on: true, band: true }),
         S('local', (R) => R.W.rmse.local, { on: true, band: true }),
-        S('oracleA', (R) => R.W.rmse.oracle, { key: 'oracle', on: true }),
-        S('exact', (R) => R.W.rmse.exact, { extra: true }),
-        S('persistence', (R) => R.W.rmse.persistence, { extra: true }),
       ] }],
-      tableCaption: 'Tracking RMSE (10 m): median over the 20 runs of each *N*, interquartile range below. Alone, exact averaging, the oracle and persistence are replayed on the telemetry of each run.',
+      tableCaption: 'Tracking RMSE (10 m): median over the 20 runs of each *N*, interquartile range below. Alone is replayed on the telemetry of each run.',
     },
     'w-id': {
       alt: 'Line chart: identification error versus N, both axes log scale, medians with interquartile bands over the 120 (run, station) pairs of each N.',
@@ -1157,9 +1143,8 @@
       panels: [{ id: 'main', y: Object.assign({}, Y_ID), series: [
         S('coop3', (R) => R.W.id.coop, { key: 'coop', on: true, band: true }),
         S('local', (R) => R.W.id.local, { on: true, band: true }),
-        S('exact', (R) => R.W.id.exact, { extra: true }),
       ] }],
-      tableCaption: '‖*Â*^{(*i*)} − *A*‖_{F}: median over the 20 runs × 6 stations of each *N*, interquartile range below. Alone and exact averaging are replayed on the telemetry of each run.',
+      tableCaption: '‖*Â*^{(*i*)} − *A*‖_{F}: median over the 20 runs × 6 stations of each *N*, interquartile range below. Alone is replayed on the telemetry of each run.',
     },
     'w-seeds': {
       kind: 'strip',

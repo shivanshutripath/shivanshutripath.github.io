@@ -14,7 +14,7 @@
 const HERE = import.meta.url;
 const href = (p) => new URL(p, HERE).href;
 const PATHS = {
-  run: href('../../data/run.js'),
+  run: href('../../data/run.js?v=20261106d'),     // bump the version when data/run.js changes
   player: href('../../vendor/webots/wwi/R2025a/WebotsView.js'),
   world: href('../../vendor/webots/wwi/R2025a/nodes/WbWorld.js'),
   mouse: href('../../vendor/webots/wwi/R2025a/MouseEvents.js'),
@@ -331,15 +331,15 @@ class WebotsSim {
 
   buildChart() {
     this.vTrack = h('b', { class: 'ws-val', text: '–' });
-    this.vRobot = h('b', { class: 'ws-val', text: '–' });
-    this.chart = h('canvas', { class: 'ws-chart', role: 'img', 'aria-label': 'Distance to the best position x*(t) over the run, log scale: RMS over the stations of their choices x_i(t), and the charging robot.' });
+    this.vLocal = h('b', { class: 'ws-val', text: '–' });
+    this.chart = h('canvas', { class: 'ws-chart', role: 'img', 'aria-label': 'Distance to the best position x*(t) over the run, log scale: RMS over the stations of their choices x_i(t), when they learn together and when each learns alone.' });
     return h('section', { class: 'ws-pane ws-pane--chart', 'aria-label': 'Distance to the best position' },
       h('header', { class: 'ws-pane-head' },
         h('h3', { class: 'ws-pane-title', html: 'Distance to <i>x</i><sup class="ws-star">⋆</sup>(<i>t</i>)' }),
         h('span', { class: 'ws-pane-note', text: 'units, log scale' })),
       h('div', { class: 'ws-chart-key' },
-        h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-ln ws-ln--st' }), 'stations, RMS ', this.vTrack),
-        h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-ln ws-ln--rb' }), 'robot ', this.vRobot)),
+        h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-ln ws-ln--coop' }), 'together ', this.vTrack),
+        h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-ln ws-ln--local' }), 'alone ', this.vLocal)),
       h('div', { class: 'ws-chart-box' }, this.chart));
   }
 
@@ -626,17 +626,28 @@ class WebotsSim {
     for (const f of this.flights) for (const p of f.path) pts.push([p[0], p[1]]);
     this.topPts = pts;
     this.setTopYaw(viewFor(16, 9).yaw);
-    // log-scaled error series for the chart
+    // log-scaled error series for the chart: the run, in which the stations learn A together, and
+    // the same run had each station learned A alone (replayed on the same telemetry; null in an
+    // older data/run.js)
     this.series = {
       track: R.err.track.map(Number),
-      robot: R.err.robot.map(Number),
+      local: R.err.local ? R.err.local.map(Number) : null,
     };
     // window RMSE on [150, 300)
     const w = R.summary.window || [150, 300];
-    let acc = 0;
-    for (let t = w[0]; t < w[1]; t++) acc += this.series.track[t] ** 2;
-    this.windowRmse = Math.sqrt(acc / (w[1] - w[0]));
+    const rms = (arr) => {
+      let acc = 0;
+      for (let t = w[0]; t < w[1]; t++) acc += arr[t] ** 2;
+      return Math.sqrt(acc / (w[1] - w[0]));
+    };
+    this.windowRmse = rms(this.series.track);
+    this.windowRmseLocal = this.series.local ? rms(this.series.local) : null;
     this.window = w;
+    if (this.series.local) {
+      this.chart.setAttribute('aria-label', 'Distance to the best position x*(t) over the run, log scale: RMS over the stations of their choices x_i(t), '
+        + `when they learn together and when each learns alone. From t = ${w[0]} to ${w[1] - 1} the RMSE is ${this.windowRmse.toFixed(3)} together `
+        + `and ${this.windowRmseLocal.toFixed(3)} alone.`);
+    }
   }
 
   /* The top view is drawn in the ground frame of the default 3D camera (screen up = camera
@@ -1142,7 +1153,7 @@ class WebotsSim {
       }
     }
     this.vTrack.textContent = this.series.track[t].toFixed(2);
-    this.vRobot.textContent = this.series.robot[t].toFixed(2);
+    this.vLocal.textContent = this.series.local ? this.series.local[t].toFixed(2) : '–';
     this.drawChart();
   }
 
@@ -1250,14 +1261,19 @@ class WebotsSim {
     ctx.lineTo(Math.round(X(N)) + 0.5, Tp + ph);
     ctx.stroke();
     ctx.setLineDash([]);
-    // window RMSE
-    const yR = Y(this.windowRmse);
-    ctx.strokeStyle = 'rgba(0, 114, 178, 0.55)';
+    // window RMSE, together and alone: [value, dotted-line color, label ink]
+    const S = this.series;
+    const rmse = [[this.windowRmse, 'rgba(0, 114, 178, 0.55)', '#0a5a8c']];
+    if (S.local) rmse.push([this.windowRmseLocal, 'rgba(213, 94, 0, 0.6)', '#b34d00']);
     ctx.setLineDash([1.5, 2.5]);
-    ctx.beginPath();
-    ctx.moveTo(X(this.window[0]), yR);
-    ctx.lineTo(X(this.window[1]), yR);
-    ctx.stroke();
+    for (const [v, c] of rmse) {
+      const y = Y(v);
+      ctx.strokeStyle = c;
+      ctx.beginPath();
+      ctx.moveTo(X(this.window[0]), y);
+      ctx.lineTo(X(this.window[1]), y);
+      ctx.stroke();
+    }
     ctx.setLineDash([]);
     // series
     const line = (arr, color, width, from, to, alpha) => {
@@ -1274,10 +1290,10 @@ class WebotsSim {
       ctx.stroke();
       ctx.globalAlpha = 1;
     };
-    const S = this.series;
-    line(S.robot, '#8a8a8a', 1.2, t, T - 1, 0.28);
+    // alone under together: the two agree until t = N, where the stations learn A
+    if (S.local) line(S.local, '#d55e00', 1.5, t, T - 1, 0.25);
     line(S.track, '#0072b2', 1.5, t, T - 1, 0.25);
-    line(S.robot, '#6e6e6e', 1.3, 0, t, 1);
+    if (S.local) line(S.local, '#d55e00', 1.8, 0, t, 1);
     line(S.track, '#0072b2', 1.8, 0, t, 1);
     // playhead
     const xp = X(t + 0.5);
@@ -1296,19 +1312,25 @@ class WebotsSim {
       ctx.strokeStyle = '#fff';
       ctx.stroke();
     };
-    dotAt(S.robot[t], '#6e6e6e');
+    if (S.local) dotAt(S.local[t], '#d55e00');
     dotAt(S.track[t], '#0072b2');
-    // the window RMSE label last, on its white halo, so that no line crosses it
+    // the window RMSE labels last, on a white halo, so that no line crosses them; the larger
+    // value is labelled above its line and the smaller below its own, so the two never overlap
     ctx.textAlign = 'right';
-    ctx.textBaseline = 'alphabetic';
     ctx.font = '600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-    const rmseLabel = 'RMSE ' + this.windowRmse.toFixed(3);
     ctx.lineJoin = 'round';
     ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
-    ctx.strokeText(rmseLabel, X(this.window[1]) - 1, yR - 5);
-    ctx.fillStyle = '#0a5a8c';
-    ctx.fillText(rmseLabel, X(this.window[1]) - 1, yR - 5);
+    const top = Math.max(...rmse.map((r) => r[0]));
+    for (const [v, , ink] of rmse) {
+      const above = v === top;
+      const y = Y(v) + (above ? -5 : 5);
+      const label = 'RMSE ' + v.toFixed(3);
+      ctx.textBaseline = above ? 'alphabetic' : 'top';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+      ctx.strokeText(label, X(this.window[1]) - 1, y);
+      ctx.fillStyle = ink;
+      ctx.fillText(label, X(this.window[1]) - 1, y);
+    }
   }
 
   /* --------------------------------------------------------------------------- top view */

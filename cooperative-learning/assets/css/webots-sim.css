@@ -1120,12 +1120,12 @@
   border-top: 2px solid;
 }
 
-.ws-ln--st {
+.ws-ln--coop {
   border-color: var(--ws-coop);
 }
 
-.ws-ln--rb {
-  border-color: #6e6e6e;
+.ws-ln--local {
+  border-color: var(--ws-local);
 }
 
 .ws-val {
