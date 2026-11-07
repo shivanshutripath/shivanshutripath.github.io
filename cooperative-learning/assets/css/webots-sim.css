@@ -1398,23 +1398,6 @@
   display: block;
 }
 
-.ws-viewtag {
-  position: absolute;
-  z-index: 5;
-  top: 12px;
-  right: 12px;
-  padding: 3px 9px;
-  border-radius: 290486px;
-  background: rgba(20, 24, 28, 0.62);
-  color: #fff;
-  font-size: 12px;
-  line-height: 1.4;
-  pointer-events: none;
-}
-
-.ws--show-poster .ws-stage .ws-viewtag {
-  opacity: 0;
-}
 
 @media (max-width: 760px) {
   .ws-views {
@@ -1424,30 +1407,65 @@
   .ws-topbox {
     aspect-ratio: 4 / 3;
   }
+  .ws-view + .ws-view .ws-view-head {
+    border-top: 1px solid var(--ws-line-soft);
+  }
 }
 
-/* exact averaging: every station would share this error */
-.ws-bars {
-  position: relative;
+/* a header over each view: one run, seen two ways */
+.ws-views {
+  border: 1px solid var(--ws-line);
+  border-bottom: 0;
 }
 
-.ws-exmark {
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  width: 0;
-  border-left: 1.5px dashed var(--ws-coop);
-  opacity: 0;
-  transition: opacity 0.4s ease;
+.ws-view {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
 }
 
-.ws--learned .ws-exmark {
-  opacity: 0.9;
+.ws-view-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid var(--ws-line-soft);
+  background: #fff;
 }
 
-.ws-sw--exact {
-  width: 0;
-  height: 12px;
+.ws-view-title {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--ws-font);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ws-view-note {
+  color: var(--ws-muted);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+/* legend: the 3D and the top-view symbol of each item, side by side */
+.ws-lg-sw {
+  display: flex;
+  gap: 3px;
+  width: 75px;
+  background: none;
   border-radius: 0;
-  border-left: 1.5px dashed var(--ws-coop);
+}
+
+.ws-lg-sw svg {
+  flex: none;
+  border-radius: 5px;
+  background: #5d8450;
+}
+
+.ws-lg-sw .ws-lg-top,
+.ws--top .ws-lg-sw--two .ws-lg-3d {
+  display: block;
 }

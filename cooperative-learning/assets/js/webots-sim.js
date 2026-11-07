@@ -271,8 +271,8 @@ class WebotsSim {
     this.stage = h('div', {
       class: 'ws-stage', tabindex: '0', role: 'group', 'aria-roledescription': 'simulation viewer',
       'aria-label': 'Webots simulation. Space plays or pauses, the arrow keys step.',
-    }, this.layer3d, this.poster, this.hud, this.center, this.msg, this.toast, this.live, h('span', { class: 'ws-viewtag', text: '3D' }));
-    this.topBox = h('div', { class: 'ws-topbox' }, this.topCanvas, h('span', { class: 'ws-viewtag', text: 'Top view' }));
+    }, this.layer3d, this.poster, this.hud, this.center, this.msg, this.toast, this.live);
+    this.topBox = h('div', { class: 'ws-topbox' }, this.topCanvas);
 
     // control bar
     this.playBtn = h('button', { class: 'ws-btn ws-btn--play', type: 'button', 'aria-label': 'Play', html: icon('play') });
@@ -302,7 +302,11 @@ class WebotsSim {
     // panels
     this.panes = h('div', { class: 'ws-panes' }, this.buildStations(), this.buildChart(), this.buildLegend());
     this.console = h('div', { class: 'ws-console' }, this.bar, this.panes);
-    this.views = h('div', { class: 'ws-views' }, this.stage, this.topBox);
+    const viewHead = (title, note) => h('div', { class: 'ws-view-head' },
+      h('h3', { class: 'ws-view-title', text: title }), h('span', { class: 'ws-view-note', text: note }));
+    this.views = h('div', { class: 'ws-views' },
+      h('div', { class: 'ws-view' }, viewHead('3D view', 'Webots scene'), this.stage),
+      h('div', { class: 'ws-view' }, viewHead('Top view', 'the same scene from above'), this.topBox));
     root.append(this.views, this.console);
     this.syncStage();
     this.bind();
@@ -319,8 +323,7 @@ class WebotsSim {
     this.stDetail = h('div', { class: 'ws-st-detail', hidden: true });
     this.stKey = h('span', { class: 'ws-key' },
       h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--coop' }), 'together'),
-      h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--local' }), 'alone'),
-      h('span', { class: 'ws-key-item ws-key-item--exact' }, h('i', { class: 'ws-sw ws-sw--exact' }), 'exact averaging'));
+      h('span', { class: 'ws-key-item' }, h('i', { class: 'ws-sw ws-sw--local' }), 'alone'));
     return h('section', { class: 'ws-pane ws-pane--stations', 'aria-label': 'Stations' },
       h('header', { class: 'ws-pane-head' }, h('h3', { class: 'ws-pane-title', text: 'Stations' }), this.stKey),
       this.stMain, this.stDetail);
@@ -341,7 +344,7 @@ class WebotsSim {
   }
 
   buildLegend() {
-    // 3D and top-view drawings of the same thing; CSS shows the one of the active view
+    // 3D and top-view drawings of the same thing, shown next to each other
     const sw = (inner, top) => h('span', { class: 'ws-lg-sw' + (top ? ' ws-lg-sw--two' : ''),
       html: `<svg class="ws-lg-3d" viewBox="0 0 36 22" aria-hidden="true">${inner}</svg>` +
         (top ? `<svg class="ws-lg-top" viewBox="0 0 36 22" aria-hidden="true">${top}</svg>` : '') });
@@ -677,7 +680,6 @@ class WebotsSim {
     const R = this.run;
     const span = Math.log(BAR_X[1] / BAR_X[0]);
     const bx = (v) => clamp(Math.log(Math.max(v, BAR_X[0]) / BAR_X[0]) / span, 0.02, 1);
-    const ex = Number(R.summary.idExact) || 0;
     this.stRows = [];
     this.stList.textContent = '';
     R.agencies.forEach((name, i) => {
@@ -690,10 +692,9 @@ class WebotsSim {
       h('i', { class: 'ws-st-dot' }),
       h('span', { class: 'ws-st-name', text: name }),
       h('span', { class: 'ws-st-tele' }, h('i', { class: 'ws-tele', title: 'telemetry' })),
-      h('span', { class: 'ws-bars', title: `together ${coop.toFixed(4)}, alone ${local.toFixed(4)}` + (ex ? `, exact averaging ${ex.toFixed(4)} (every station)` : '') },
+      h('span', { class: 'ws-bars', title: `together ${coop.toFixed(4)}, alone ${local.toFixed(4)}` },
         h('i', { class: 'ws-ebar ws-ebar--coop', style: `--w:${(100 * bx(coop)).toFixed(2)}%` }),
-        h('i', { class: 'ws-ebar ws-ebar--local', style: `--w:${(100 * bx(local)).toFixed(2)}%` }),
-        ex ? h('i', { class: 'ws-exmark', style: `left:${(100 * bx(ex)).toFixed(2)}%` }) : null));
+        h('i', { class: 'ws-ebar ws-ebar--local', style: `--w:${(100 * bx(local)).toFixed(2)}%` })));
       this.stRows.push(row);
       this.stList.append(row);
     });
@@ -702,8 +703,7 @@ class WebotsSim {
       this.stTicks.append(h('span', { style: `left:${(100 * bx(v)).toFixed(2)}%`, text: String(v) }));
     }
     const s = R.summary;
-    this.footLearned = `mean <b class="ws-c-coop">${Number(s.idCoop).toFixed(4)}</b> together, <b class="ws-c-local">${Number(s.idLocal).toFixed(4)}</b> alone (${Number(s.ratio).toFixed(1)}×)` +
-      (s.idExact ? `<br>exact averaging <b class="ws-c-coop">${Number(s.idExact).toFixed(4)}</b>, the same for every station` : '');
+    this.footLearned = `mean <b class="ws-c-coop">${Number(s.idCoop).toFixed(4)}</b> together, <b class="ws-c-local">${Number(s.idLocal).toFixed(4)}</b> alone (${Number(s.ratio).toFixed(1)}×)`;
     this.footBefore = `<i>Â</i> is learned at <i>t</i> = <i>N</i> = ${this.N}`;
   }
 
