@@ -1,6 +1,6 @@
 /* recommendation.css: the "Recommendation systems" section (#recommendation): the three steps,
    the headline numbers, the main chart, the explorer (#rec-explorer, assets/js/recommendation.js)
-   and the details for researchers. Namespace .rx-*. Light panels in the page's Nerfies look, like
+   and the simulation details. Namespace .rx-*. Light panels in the page's Nerfies look, like
    the playground; the genre colors are those of recommendation_demo/make_figures.py. No dark-mode
    rules (the page has none). */
 
@@ -234,7 +234,7 @@
 .rx-strip-day { stroke: var(--rx-head); stroke-width: 1.5; }
 .rx-strip-hit { fill: transparent; cursor: pointer; }
 
-/* ---- details for researchers */
+/* ---- simulation details */
 .rx-details {
   margin: 2rem 0 0;
   border: 1px solid var(--rx-line);
