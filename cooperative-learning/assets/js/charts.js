@@ -5,7 +5,8 @@
  *   a-rmse a-id a-m      case study (A), Figure 2 of the paper and the baselines of its results table
  *   b-rmse b-id b-tau    case study (B), Figure 4
  *   w-rmse w-id w-seeds  the 100 Webots runs of Section 5.2
- *   r-agree r-forecast r-mix  recommendation systems: case study (B) with products and users
+ *   r-simple r-forecast r-mix  recommendation systems (together and alone only):
+ *                        the main chart, and the two charts of its details
  *                        (window.RESULTS.REC, data/recommendation.js from recommendation_demo)
  * Each chart has a one-line legend of toggle buttons (aria-pressed; "+n" opens the other
  * baselines), the plot (an SVG with role="img" and a text description), a tooltip on hover,
@@ -1108,55 +1109,35 @@
       toggles: [{ key: 'rmsePanel', sty: 'panel', label: 'tracking RMSE', extra: true, panel: true }],
       tableCaption: '*N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F} (median over 50 trials and 8 servers, interquartile range below) and tracking RMSE (median over 50 trials). Exact averaging is *τ* = ∞.',
     },
-    'r-agree': {
+    'r-simple': {
       requires: 'REC',
-      alt: 'Line chart: share of user-days on which the first screen holds the products of the ideal boosts, versus N (log scale), medians with interquartile bands over 50 trials, together, alone, persistence and frozen boosts.',
-      x: XN,
-      panels: [{ id: 'main', y: { type: 'linear', title: 'ideal first screens (%)', tip: 'ideal first screens (%)', domain: [40, 100] }, series: [
+      alt: 'Line chart: percentage of the daily lists that hold the best 8 products, versus the days of data before the stop (log scale), medians with interquartile bands over 50 simulated runs, learning together and each server alone.',
+      x: { type: 'log', domain: [26, 230], ticks: [30, 50, 100, 150, 200], name: 'days of data', title: 'days of data before the stop' },
+      panels: [{ id: 'main', y: { type: 'linear', title: 'best lists (%)', tip: 'best lists (%)', domain: [85, 100] }, series: [
         S('coop3', (R) => R.REC.mc.agree.coop3, { on: true, band: true }),
         S('local', (R) => R.REC.mc.agree.local, { on: true, band: true }),
-        S('persistence', (R) => R.REC.mc.agree.persistence, { on: true }),
-        S('frozen', (R) => R.REC.mc.agree.frozen, { on: true }),
-        S('oracleA', (R) => R.REC.mc.agree.oracleA, { extra: true }),
-        S('exact', (R) => R.REC.mc.agree.exact, { extra: true }),
-        S('centralized', (R) => R.REC.mc.agree.centralized, { extra: true }),
-        S('pooledLS', (R) => R.REC.mc.agree.pooledLS, { extra: true }),
-        S('coop1', (R) => R.REC.mc.agree.coop1, { extra: true }),
-        S('oracleKF', (R) => R.REC.mc.agree.oracleKF, { extra: true }),
       ] }],
-      tableCaption: 'Share of user-days (%) on which the first screen holds the same eight products as under the ideal boosts *x*^{⋆}(*t*), in any order, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
+      tableCaption: 'Share of the daily lists (%) that hold the best 8 products, over days *N* + 50 to *N* + 199 of 50 simulated runs: median, interquartile range below.',
     },
     'r-forecast': {
       requires: 'REC',
-      alt: 'Line chart: RMSE of the forecasts of the interests versus N, both axes log scale, medians with interquartile bands over 50 trials, together, alone, persistence and the oracle that knows A.',
+      alt: 'Line chart: RMSE of the forecasts of the interests versus N, both axes log scale, medians with interquartile bands over 50 trials, together and alone.',
       x: XN,
-      panels: [{ id: 'main', y: { type: 'log', title: 'forecast RMSE', tip: 'forecast RMSE', domain: [0.075, 1.0], ticks: [0.1, 0.2, 0.5, 1] }, series: [
+      panels: [{ id: 'main', y: { type: 'log', title: 'forecast RMSE', tip: 'forecast RMSE', domain: [0.075, 0.3], ticks: [0.1, 0.2] }, series: [
         S('coop3', (R) => R.REC.mc.forecast.coop3, { on: true, band: true }),
         S('local', (R) => R.REC.mc.forecast.local, { on: true, band: true }),
-        S('persistence', (R) => R.REC.mc.forecast.persistence, { on: true }),
-        S('oracleA', (R) => R.REC.mc.forecast.oracleA, { on: true }),
-        S('exact', (R) => R.REC.mc.forecast.exact, { extra: true }),
-        S('pooledLS', (R) => R.REC.mc.forecast.pooledLS, { extra: true }),
-        S('coop1', (R) => R.REC.mc.forecast.coop1, { extra: true }),
-        S('oracleKF', (R) => R.REC.mc.forecast.oracleKF, { extra: true }),
       ] }],
       tableCaption: 'RMSE of the forecasts of the interests, per genre, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
     },
     'r-mix': {
       requires: 'REC',
-      alt: 'Line chart: error of the genre shares of the first-screen slots in percentage points versus N, both axes log scale, medians with interquartile bands over 50 trials, together, alone, persistence and frozen boosts.',
+      alt: 'Line chart: error of the genre shares of the lists in percentage points versus N, both axes log scale, medians with interquartile bands over 50 trials, together and alone.',
       x: XN,
-      panels: [{ id: 'main', y: { type: 'log', title: 'genre-mix error (pp)', tip: 'genre-mix error (pp)', domain: [0.18, 4], ticks: [0.2, 0.5, 1, 2] }, series: [
+      panels: [{ id: 'main', y: { type: 'log', title: 'genre-mix error (pp)', tip: 'genre-mix error (pp)', domain: [0.18, 0.8], ticks: [0.2, 0.3, 0.5] }, series: [
         S('coop3', (R) => R.REC.mc.exposure.coop3, { on: true, band: true }),
         S('local', (R) => R.REC.mc.exposure.local, { on: true, band: true }),
-        S('persistence', (R) => R.REC.mc.exposure.persistence, { on: true }),
-        S('frozen', (R) => R.REC.mc.exposure.frozen, { on: true }),
-        S('oracleA', (R) => R.REC.mc.exposure.oracleA, { extra: true }),
-        S('exact', (R) => R.REC.mc.exposure.exact, { extra: true }),
-        S('pooledLS', (R) => R.REC.mc.exposure.pooledLS, { extra: true }),
-        S('coop1', (R) => R.REC.mc.exposure.coop1, { extra: true }),
       ] }],
-      tableCaption: 'Mean absolute error of the genre shares of the first-screen slots (four genres, every region), in percentage points, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
+      tableCaption: 'Mean absolute error of the genre shares of the lists (four genres, every region), in percentage points, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
     },
     'w-rmse': {
       alt: 'Line chart: tracking RMSE in units of 10 m versus N, both axes log scale, medians with interquartile bands over the 20 runs of each N, with the oracle that knows A.',

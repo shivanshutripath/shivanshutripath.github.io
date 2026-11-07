@@ -20,22 +20,22 @@
   <link rel="preload" href="vendor/fonts/cmunbx.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="vendor/fonts/cmunrm.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/fonts/cmu-serif.css">
-  <link rel="stylesheet" href="assets/css/site.css">
-  <link rel="stylesheet" href="assets/css/charts.css">
-  <link rel="stylesheet" href="assets/css/webots-sim.css">
-  <link rel="stylesheet" href="assets/css/playground.css">
-  <link rel="stylesheet" href="assets/css/recommendation.css">
+  <link rel="stylesheet" href="assets/css/site.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/charts.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/webots-sim.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/playground.css?v=20261106c">
+  <link rel="stylesheet" href="assets/css/recommendation.css?v=20261106c">
 
   <script defer src="vendor/katex/katex.min.js"></script>
   <script defer src="vendor/katex/contrib/auto-render.min.js"></script>
-  <script defer src="data/results.js"></script>
-  <script defer src="data/recommendation.js"></script>
-  <script defer src="assets/js/charts.js"></script>
-  <script defer src="assets/js/engine.js"></script>
-  <script defer src="assets/js/playground.js"></script>
-  <script defer src="assets/js/recommendation.js"></script>
-  <script type="module" src="assets/js/webots-sim.js"></script>
-  <script defer src="assets/js/site.js"></script>
+  <script defer src="data/results.js?v=20261106c"></script>
+  <script defer src="data/recommendation.js?v=20261106c"></script>
+  <script defer src="assets/js/charts.js?v=20261106c"></script>
+  <script defer src="assets/js/engine.js?v=20261106c"></script>
+  <script defer src="assets/js/playground.js?v=20261106c"></script>
+  <script defer src="assets/js/recommendation.js?v=20261106c"></script>
+  <script type="module" src="assets/js/webots-sim.js?v=20261106c"></script>
+  <script defer src="assets/js/site.js?v=20261106c"></script>
 
   <script type="application/ld+json">
   {
@@ -192,19 +192,51 @@
 <section class="section" id="recommendation">
   <div class="container is-max-desktop">
     <h2 class="title">Recommendation systems</h2>
-    <p class="lead">Case study (B), made concrete. An online marketplace serves its users from eight regional data centers that never share a user&rsquo;s data. The ranking model is shared, so the servers agree on three genre boosts, logit shifts that promote outdoor and sports, home and kitchen, or trending tech products in every feed, and retune them every day as the interests of their users drift. Each server measures its region&rsquo;s interests from 100 unboosted sessions a day. After 100 days the data stop, and for 200 more days the servers tune the boosts from forecasts alone.</p>
+    <p class="lead">Here is the method at work in an online store. The store has shoppers in eight regions, and each region has its own server. Privacy rules keep each region&rsquo;s shopping data on its own server. Together, the servers decide how strongly to promote three kinds of products: outdoor, home and tech. What shoppers want changes over time, so the promotion has to change too.</p>
+    <ol class="rx-steps">
+      <li class="rx-step">
+        <span class="rx-step-n" aria-hidden="true">1</span>
+        <h3>Days 0 to 99: watch</h3>
+        <p>Every day, each server looks at 100 visits from its own region and estimates how much its shoppers want each kind of product.</p>
+      </li>
+      <li class="rx-step">
+        <span class="rx-step-n" aria-hidden="true">2</span>
+        <h3>Day 100: learn together</h3>
+        <p>The data stop. The servers send their neighbors small summaries, never shopper data, and learn together how interests change.</p>
+      </li>
+      <li class="rx-step">
+        <span class="rx-step-n" aria-hidden="true">3</span>
+        <h3>Days 100 to 299: predict</h3>
+        <p>Without new data, each server predicts what its shoppers will want and keeps adjusting the promotion.</p>
+      </li>
+    </ol>
+
+    <h3 class="subtitle-3">How often do shoppers see the best products?</h3>
+    <p class="lead">Each shopper sees a list of 8 products. The best list is the one the store would show if it knew what every region wants right now. With only 30 days of data before the stop:</p>
+    <div class="rx-tiles is-two">
+      <div class="rx-tile is-coop"><span class="rx-tile-n">94%</span><span class="rx-tile-t">of the daily lists are the best ones when the servers <b>learn together</b></span></div>
+      <div class="rx-tile is-local"><span class="rx-tile-n">90%</span><span class="rx-tile-t">when <b>each server learns alone</b></span></div>
+    </div>
+    <figure class="figure rx-chart-main"><div class="chart" data-chart="r-simple" role="img" aria-label="Share of the daily lists that are the best ones, versus the days of data before the stop, for learning together and each server alone"></div><figcaption>With more days of data both do better. Learning together stays ahead, most of all when data are scarce. Each point is the median of 50 simulated runs; the bands show the middle half of the runs.</figcaption></figure>
+
+    <h3 class="subtitle-3">See it for one shopper</h3>
+    <p class="lead">Pick a region and a day. Each column shows the 8 products a shopper sees; a product outlined in red is not on the best list.</p>
   </div>
   <div class="container is-wide">
     <div id="rec-explorer" class="rx"></div>
   </div>
   <div class="container is-max-desktop">
-    <p class="rx-note">A user&rsquo;s first screen is the top eight of 32 products, ranked by the product&rsquo;s base score, the user&rsquo;s taste for it and affinity for its genre, and the boost of its genre at the user&rsquo;s server. In the trial above, the trial of the paper&rsquo;s Figure 3(b), the first screen holds the same eight products as under the ideal boosts \(x^\star(t)\) on 93.4% of the user-days from day 150 to day 299 with cooperative identification, 90.6% alone, and 81.5% with frozen boosts. Most users see the ideal products either way: 73% of them never see a different first screen in that window, together or alone. The difference falls on users whose eighth and ninth products are close in score.</p>
-    <div class="chart-row">
-      <figure class="figure"><div class="chart" data-chart="r-agree" role="img" aria-label="Recommendation: share of user-days with the ideal first screen versus N"></div><figcaption>(a) Ideal first screens: 93.6&ndash;95.0% of user-days together for every \(N\), against 89.7&ndash;93.2% alone, and 60&ndash;89% when the servers do not forecast (persistence, frozen boosts).</figcaption></figure>
-      <figure class="figure"><div class="chart" data-chart="r-forecast" role="img" aria-label="Recommendation: RMSE of the interest forecasts versus N"></div><figcaption>(b) Forecasts of the interests: 25&ndash;50% lower RMSE together than alone, and within 9% of the oracle that knows \(A\).</figcaption></figure>
-      <figure class="figure"><div class="chart" data-chart="r-mix" role="img" aria-label="Recommendation: error of the genre mix of the first screens versus N"></div><figcaption>(c) Genre mix of the first screens: an error of 0.27&ndash;0.34 percentage points together, against 0.36&ndash;0.55 alone.</figcaption></figure>
-    </div>
-    <p class="rx-fine">Users, products and region names are simulated; the model, the data the servers receive and the algorithm are the paper&rsquo;s. 50 Monte Carlo trials per \(N\), the trials of the paper&rsquo;s Figure 4; lines are medians and bands interquartile ranges; together means \(\tau=3\) consensus rounds, alone \(\tau=0\).</p>
+    <details class="rx-details" id="recommendation-details">
+      <summary>Details for researchers</summary>
+      <div class="rx-details-body">
+        <p>The store is case study (B) of the paper, made concrete with simulated shoppers and products; the model, the data the servers receive and the algorithm are the paper&rsquo;s. The promotion is the vector of genre boosts \(x\), logit shifts added to the score of every product of a genre in the shared ranking model. A shopper&rsquo;s list is the top 8 of 32 products, ranked by the product&rsquo;s base score, the shopper&rsquo;s taste for it and affinity for its genre, and the boost of its genre at the shopper&rsquo;s server; the best list uses the minimizer \(x^\star(t)\) of the team cost. A list counts as the best one when it holds the same 8 products, in any order. The numbers cover days \(N+50\) to \(N+199\), the paper&rsquo;s window, over 4,000 shoppers and the paper&rsquo;s 50 Monte Carlo trials per \(N\). In the trial shown above, the trial of the paper&rsquo;s Figure 3(b), the lists are the best ones on 93.4% of the shopper-days together and 90.6% alone.</p>
+        <div class="chart-row is-two">
+          <figure class="figure"><div class="chart" data-chart="r-forecast" role="img" aria-label="Recommendation: RMSE of the interest forecasts versus N, together and alone"></div><figcaption>(a) Forecasts of the interests: 25&ndash;50% lower RMSE together than alone.</figcaption></figure>
+          <figure class="figure"><div class="chart" data-chart="r-mix" role="img" aria-label="Recommendation: error of the genre mix of the lists versus N, together and alone"></div><figcaption>(b) Genre mix of the lists: an error of 0.27&ndash;0.34 percentage points together, against 0.36&ndash;0.55 alone.</figcaption></figure>
+        </div>
+        <p class="rx-fine">Together means \(\tau=3\) consensus rounds; alone means \(\tau=0\), each server estimates \(A\) by itself. The code is <code>recommendation_demo/</code> in the code download.</p>
+      </div>
+    </details>
   </div>
 </section>
 
