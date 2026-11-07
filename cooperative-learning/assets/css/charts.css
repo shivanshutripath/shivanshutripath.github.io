@@ -10,6 +10,7 @@
   --ch-oracle: var(--c-oracle, #16191d);
   --ch-pooled: var(--c-pooled, #cc79a7);
   --ch-recon: var(--c-recon, #e69f00);
+  --ch-frozen: var(--c-frozen, #882255);
   --ch-ink: var(--ink, #16191d);
   --ch-ink-soft: var(--ink-soft, #4a5058);
   --ch-ink-faint: var(--ink-faint, #6b727b);
@@ -38,6 +39,7 @@
     --ch-oracle: var(--c-oracle, #e8eaed);
     --ch-pooled: var(--c-pooled, #e29ac3);
     --ch-recon: var(--c-recon, #f2b64a);
+    --ch-frozen: var(--c-frozen, #d16a9a);
     --ch-ink: var(--ink, #e8eaed);
     --ch-ink-soft: var(--ink-soft, #b3b9c1);
     --ch-ink-faint: var(--ink-faint, #8f969f);

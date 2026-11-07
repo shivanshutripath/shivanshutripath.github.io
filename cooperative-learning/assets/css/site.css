@@ -42,6 +42,7 @@
   --c-oracle: #363636;
   --c-pooled: #cc79a7;
   --c-recon: #e69f00;
+  --c-frozen: #882255;         /* frozen boosts (recommendation section) */
   --c-xstar: #e0a100;         /* the best position x*(t), gold beam */
 
   /* the six stations / UAVs (same as the Webots scene) */

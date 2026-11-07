@@ -24,13 +24,16 @@
   <link rel="stylesheet" href="assets/css/charts.css">
   <link rel="stylesheet" href="assets/css/webots-sim.css">
   <link rel="stylesheet" href="assets/css/playground.css">
+  <link rel="stylesheet" href="assets/css/recommendation.css">
 
   <script defer src="vendor/katex/katex.min.js"></script>
   <script defer src="vendor/katex/contrib/auto-render.min.js"></script>
   <script defer src="data/results.js"></script>
+  <script defer src="data/recommendation.js"></script>
   <script defer src="assets/js/charts.js"></script>
   <script defer src="assets/js/engine.js"></script>
   <script defer src="assets/js/playground.js"></script>
+  <script defer src="assets/js/recommendation.js"></script>
   <script type="module" src="assets/js/webots-sim.js"></script>
   <script defer src="assets/js/site.js"></script>
 
@@ -177,12 +180,31 @@
     </div>
 
     <h3 class="subtitle-3">Decentralized recommendation with regional servers</h3>
-    <p class="lead">Eight regional servers agree on boosts for three content genres while the interests of their users drift with shared, unknown dynamics. The costs are logistic, not quadratic. Same trials and horizon.</p>
+    <p class="lead">Eight regional servers agree on boosts for three product genres while the interests of their users drift with shared, unknown dynamics. The costs are logistic, not quadratic. Same trials and horizon. <a href="#recommendation">What this means for the products each user sees.</a></p>
     <div class="chart-row">
       <figure class="figure"><div class="chart" data-chart="b-rmse" role="img" aria-label="Recommendation: tracking RMSE versus N"></div><figcaption>(a) Tracking RMSE: 24–37% lower together for every \(N\).</figcaption></figure>
       <figure class="figure"><div class="chart" data-chart="b-id" role="img" aria-label="Recommendation: identification error versus N"></div><figcaption>(b) Identification error: 4.7–5.9 times lower together, between 0.022 and 0.026 for every \(N\).</figcaption></figure>
       <figure class="figure"><div class="chart" data-chart="b-tau" role="img" aria-label="Recommendation: identification error versus consensus rounds tau"></div><figcaption>(c) Consensus rounds at \(N=100\) (\(\sigma=0.68\)): from 0.141 for \(\tau=0\) to 0.022 for \(\tau=5\), the value of exact averaging.</figcaption></figure>
     </div>
+  </div>
+</section>
+
+<section class="section" id="recommendation">
+  <div class="container is-max-desktop">
+    <h2 class="title">Recommendation systems</h2>
+    <p class="lead">Case study (B), made concrete. An online marketplace serves its users from eight regional data centers that never share a user&rsquo;s data. The ranking model is shared, so the servers agree on three genre boosts, logit shifts that promote outdoor and sports, home and kitchen, or trending tech products in every feed, and retune them every day as the interests of their users drift. Each server measures its region&rsquo;s interests from 100 unboosted sessions a day. After 100 days the data stop, and for 200 more days the servers tune the boosts from forecasts alone.</p>
+  </div>
+  <div class="container is-wide">
+    <div id="rec-explorer" class="rx"></div>
+  </div>
+  <div class="container is-max-desktop">
+    <p class="rx-note">A user&rsquo;s first screen is the top eight of 32 products, ranked by the product&rsquo;s base score, the user&rsquo;s taste for it and affinity for its genre, and the boost of its genre at the user&rsquo;s server. In the trial above, the trial of the paper&rsquo;s Figure 3(b), the first screen holds the same eight products as under the ideal boosts \(x^\star(t)\) on 93.4% of the user-days from day 150 to day 299 with cooperative identification, 90.6% alone, and 81.5% with frozen boosts. Most users see the ideal products either way: 73% of them never see a different first screen in that window, together or alone. The difference falls on users whose eighth and ninth products are close in score.</p>
+    <div class="chart-row">
+      <figure class="figure"><div class="chart" data-chart="r-agree" role="img" aria-label="Recommendation: share of user-days with the ideal first screen versus N"></div><figcaption>(a) Ideal first screens: 93.6&ndash;95.0% of user-days together for every \(N\), against 89.7&ndash;93.2% alone, and 60&ndash;89% when the servers do not forecast (persistence, frozen boosts).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="r-forecast" role="img" aria-label="Recommendation: RMSE of the interest forecasts versus N"></div><figcaption>(b) Forecasts of the interests: 25&ndash;50% lower RMSE together than alone, and within 9% of the oracle that knows \(A\).</figcaption></figure>
+      <figure class="figure"><div class="chart" data-chart="r-mix" role="img" aria-label="Recommendation: error of the genre mix of the first screens versus N"></div><figcaption>(c) Genre mix of the first screens: an error of 0.27&ndash;0.34 percentage points together, against 0.36&ndash;0.55 alone.</figcaption></figure>
+    </div>
+    <p class="rx-fine">Users, products and region names are simulated; the model, the data the servers receive and the algorithm are the paper&rsquo;s. 50 Monte Carlo trials per \(N\), the trials of the paper&rsquo;s Figure 4; lines are medians and bands interquartile ranges; together means \(\tau=3\) consensus rounds, alone \(\tau=0\).</p>
   </div>
 </section>
 

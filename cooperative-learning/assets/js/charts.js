@@ -5,6 +5,8 @@
  *   a-rmse a-id a-m      case study (A), Figure 2 of the paper and the baselines of its results table
  *   b-rmse b-id b-tau    case study (B), Figure 4
  *   w-rmse w-id w-seeds  the 100 Webots runs of Section 5.2
+ *   r-agree r-forecast r-mix  recommendation systems: case study (B) with products and users
+ *                        (window.RESULTS.REC, data/recommendation.js from recommendation_demo)
  * Each chart has a one-line legend of toggle buttons (aria-pressed; "+n" opens the other
  * baselines), the plot (an SVG with role="img" and a text description), a tooltip on hover,
  * touch and keyboard focus (arrow keys), and a "Data" button that shows a table of the values.
@@ -187,6 +189,7 @@
     oracle: { c: 'oracle', w: 1.5,  dash: '7 3 1.5 3' },
     cent:   { c: 'cent',   w: 1.6,  dash: '8 3',        marker: 'diamond', fill: true },
     kf:     { c: 'oracle', w: 1.3,  dash: '2.5 2.5',    marker: 'plus' },
+    frozen: { c: 'frozen', w: 1.75, dash: '6 2.5 1.5 2.5', marker: 'hex', fill: true },
     coop1:  { c: 'coop',   w: 1.5,  dash: '2.5 2.5',    marker: 'tridown' },
     ref:    { c: 'ref',    w: 1.25, dash: '3 3' },
     dcoop:  { c: 'coop',   w: 0,    marker: 'circle',   fill: true },
@@ -194,7 +197,7 @@
     median: { c: 'ink',    glyph: 'median' },
     panel:  { c: 'muted',  glyph: 'panel' },
   };
-  const MK = { circle: 4, triangle: 5.2, tridown: 5, square: 3.3, diamond: 4.8, x: 3.3, plus: 4 };
+  const MK = { circle: 4, triangle: 5.2, tridown: 5, square: 3.3, diamond: 4.8, x: 3.3, plus: 4, hex: 4.2 };
   const cvar = (sty) => 'var(--ch-' + sty.c + ')';
 
   function lineAttrs(sty) {
@@ -215,6 +218,7 @@
       case 'diamond': e = sv('path', { d: poly([[x, y - r], [x + 0.75 * r, y], [x, y + r], [x - 0.75 * r, y]]) }, g); break;
       case 'x': e = sv('path', { d: path([[x - r, y - r], [x + r, y + r]]) + path([[x - r, y + r], [x + r, y - r]]) }, g); break;
       case 'plus': e = sv('path', { d: path([[x, y - r], [x, y + r]]) + path([[x - r, y], [x + r, y]]) }, g); break;
+      case 'hex': e = sv('path', { d: poly([0, 1, 2, 3, 4, 5].map((k) => [x + r * Math.cos(Math.PI / 3 * k), y + r * Math.sin(Math.PI / 3 * k)])) }, g); break;
       default: return null;
     }
     e.setAttribute('class', 'ch-mk' + (shape === 'x' || shape === 'plus' ? ' is-stroke' : sty.fill ? '' : ' is-open'));
@@ -1015,6 +1019,7 @@
     centralized: { label: 'centralized predictor', short: 'centralized', sty: 'cent' },
     oracleA: { label: 'oracle (*A* known)', short: 'oracle', sty: 'oracle' },
     oracleKF: { label: 'oracle Kalman filter', short: 'oracle KF', sty: 'kf' },
+    frozen: { label: 'frozen boosts', short: 'frozen', sty: 'frozen' },
   };
   // a series of a data block: T[key] plus its accessor and options
   const S = (key, get, opt) => Object.assign({ key }, T[key], { get }, opt || {});
@@ -1103,6 +1108,56 @@
       toggles: [{ key: 'rmsePanel', sty: 'panel', label: 'tracking RMSE', extra: true, panel: true }],
       tableCaption: '*N* = 100: ‖*Â*^{(*i*)} − *A*‖_{F} (median over 50 trials and 8 servers, interquartile range below) and tracking RMSE (median over 50 trials). Exact averaging is *τ* = ∞.',
     },
+    'r-agree': {
+      requires: 'REC',
+      alt: 'Line chart: share of user-days on which the first screen holds the products of the ideal boosts, versus N (log scale), medians with interquartile bands over 50 trials, together, alone, persistence and frozen boosts.',
+      x: XN,
+      panels: [{ id: 'main', y: { type: 'linear', title: 'ideal first screens (%)', tip: 'ideal first screens (%)', domain: [40, 100] }, series: [
+        S('coop3', (R) => R.REC.mc.agree.coop3, { on: true, band: true }),
+        S('local', (R) => R.REC.mc.agree.local, { on: true, band: true }),
+        S('persistence', (R) => R.REC.mc.agree.persistence, { on: true }),
+        S('frozen', (R) => R.REC.mc.agree.frozen, { on: true }),
+        S('oracleA', (R) => R.REC.mc.agree.oracleA, { extra: true }),
+        S('exact', (R) => R.REC.mc.agree.exact, { extra: true }),
+        S('centralized', (R) => R.REC.mc.agree.centralized, { extra: true }),
+        S('pooledLS', (R) => R.REC.mc.agree.pooledLS, { extra: true }),
+        S('coop1', (R) => R.REC.mc.agree.coop1, { extra: true }),
+        S('oracleKF', (R) => R.REC.mc.agree.oracleKF, { extra: true }),
+      ] }],
+      tableCaption: 'Share of user-days (%) on which the first screen holds the same eight products as under the ideal boosts *x*^{⋆}(*t*), in any order, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
+    },
+    'r-forecast': {
+      requires: 'REC',
+      alt: 'Line chart: RMSE of the forecasts of the interests versus N, both axes log scale, medians with interquartile bands over 50 trials, together, alone, persistence and the oracle that knows A.',
+      x: XN,
+      panels: [{ id: 'main', y: { type: 'log', title: 'forecast RMSE', tip: 'forecast RMSE', domain: [0.075, 1.0], ticks: [0.1, 0.2, 0.5, 1] }, series: [
+        S('coop3', (R) => R.REC.mc.forecast.coop3, { on: true, band: true }),
+        S('local', (R) => R.REC.mc.forecast.local, { on: true, band: true }),
+        S('persistence', (R) => R.REC.mc.forecast.persistence, { on: true }),
+        S('oracleA', (R) => R.REC.mc.forecast.oracleA, { on: true }),
+        S('exact', (R) => R.REC.mc.forecast.exact, { extra: true }),
+        S('pooledLS', (R) => R.REC.mc.forecast.pooledLS, { extra: true }),
+        S('coop1', (R) => R.REC.mc.forecast.coop1, { extra: true }),
+        S('oracleKF', (R) => R.REC.mc.forecast.oracleKF, { extra: true }),
+      ] }],
+      tableCaption: 'RMSE of the forecasts of the interests, per genre, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
+    },
+    'r-mix': {
+      requires: 'REC',
+      alt: 'Line chart: error of the genre shares of the first-screen slots in percentage points versus N, both axes log scale, medians with interquartile bands over 50 trials, together, alone, persistence and frozen boosts.',
+      x: XN,
+      panels: [{ id: 'main', y: { type: 'log', title: 'genre-mix error (pp)', tip: 'genre-mix error (pp)', domain: [0.18, 4], ticks: [0.2, 0.5, 1, 2] }, series: [
+        S('coop3', (R) => R.REC.mc.exposure.coop3, { on: true, band: true }),
+        S('local', (R) => R.REC.mc.exposure.local, { on: true, band: true }),
+        S('persistence', (R) => R.REC.mc.exposure.persistence, { on: true }),
+        S('frozen', (R) => R.REC.mc.exposure.frozen, { on: true }),
+        S('oracleA', (R) => R.REC.mc.exposure.oracleA, { extra: true }),
+        S('exact', (R) => R.REC.mc.exposure.exact, { extra: true }),
+        S('pooledLS', (R) => R.REC.mc.exposure.pooledLS, { extra: true }),
+        S('coop1', (R) => R.REC.mc.exposure.coop1, { extra: true }),
+      ] }],
+      tableCaption: 'Mean absolute error of the genre shares of the first-screen slots (four genres, every region), in percentage points, over *t* from *N* + 50 to *N* + 199: median over 50 trials, interquartile range below.',
+    },
     'w-rmse': {
       alt: 'Line chart: tracking RMSE in units of 10 m versus N, both axes log scale, medians with interquartile bands over the 20 runs of each N, with the oracle that knows A.',
       x: XN,
@@ -1151,7 +1206,7 @@
       const id = m.getAttribute('data-chart');
       const def = DEFS[id];
       if (!def) { if (window.console) console.warn('charts.js: unknown chart id', id); return; }
-      if (!R || !R.A || !R.B || !R.W) {
+      if (!R || !R.A || !R.B || !R.W || (def.requires && !R[def.requires])) {
         m.classList.add('ch-root');
         el('p', { class: 'ch-error' }, m, 'The data of this figure did not load.');
         return;

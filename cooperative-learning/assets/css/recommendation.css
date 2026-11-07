@@ -1,0 +1,181 @@
+/* recommendation.css: "Recommendation systems" (#rec-explorer, assets/js/recommendation.js).
+   Namespace .rx-*. Light panels in the page's Nerfies look, like the playground; the
+   genre colors are those of recommendation_demo/make_figures.py. No dark-mode rules
+   (the page has none). */
+
+.rx {
+  --rx-head: var(--ink, #363636);
+  --rx-text: var(--ink-soft, #4a4a4a);
+  --rx-faint: var(--ink-faint, #6b6b6b);
+  --rx-line: var(--line, #dbdbdb);
+  --rx-line-soft: var(--line-soft, #ededed);
+  --rx-panel: #fafafa;
+  --rx-card: #ffffff;
+  --rx-focus: var(--link, #0e78be);
+  --rx-coop: var(--c-coop, #0072b2);
+  --rx-local: var(--c-local, #d55e00);
+  --rx-frozen: var(--c-frozen, #882255);
+  --rx-pers: var(--c-pers, #6e6e6e);
+  --rx-ideal: var(--c-xstar, #e0a100);
+  --rx-outdoor: #228833;
+  --rx-home: #cc6677;
+  --rx-tech: #5e4fa2;
+  --rx-essentials: #c9b458;
+  --rx-radius: 10px;
+
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  color: var(--rx-text);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-size: 1rem;
+  line-height: 1.45;
+  text-align: left;
+}
+.rx *, .rx *::before, .rx *::after { box-sizing: border-box; }
+.rx-sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.rx-error { margin: 0; padding: 1rem; border: 1px dashed var(--rx-line); border-radius: var(--rx-radius); font-size: 0.9rem; }
+
+/* ---- controls: one row above everything they scope */
+.rx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 1.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rx-line);
+  border-radius: var(--rx-radius);
+  background: var(--rx-panel);
+}
+.rx-field { display: grid; gap: 0.35rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.rx-label { color: var(--rx-head); font-size: 0.8125rem; font-weight: 600; padding: 0; }
+.rx-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.rx-chip {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0 0.8em;
+  border: 1px solid var(--rx-line);
+  border-radius: 999px;
+  background: var(--rx-card);
+  color: var(--rx-head);
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.rx-chip:hover { border-color: #b5b5b5; }
+.rx-chip[aria-pressed="true"] { border-color: var(--rx-head); background: var(--rx-head); color: #ffffff; }
+.rx-chip:focus-visible, .rx-node:focus-visible { outline: 2px solid var(--rx-focus); outline-offset: 2px; }
+.rx-hint { margin: 0; color: var(--rx-faint); font-size: 0.75rem; }
+.rx-days { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; }
+.rx-day-group { display: grid; gap: 0.2rem; }
+.rx-day-title { color: var(--rx-faint); font-size: 0.72rem; }
+.rx-math { white-space: nowrap; font-family: var(--font-serif, Georgia, serif); font-weight: 400; font-size: 1.05em; }
+.rx-math sup { font-size: 0.85em; line-height: 0; vertical-align: 0.45em; }
+.rx-math.is-katex { font-family: inherit; font-size: 1em; }
+.rx-math .katex { font-size: 1.05em; }
+
+/* ---- the backbone and the selected user, side by side when wide */
+.rx-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+@media (min-width: 760px) {
+  .rx-top { grid-template-columns: minmax(0, 23rem) minmax(0, 1fr); }
+}
+.rx-map, .rx-user, .rx-feeds-panel, .rx-strip-panel {
+  margin: 0;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid var(--rx-line);
+  border-radius: var(--rx-radius);
+  background: var(--rx-card);
+  min-width: 0;
+}
+.rx-panel-title { margin: 0 0 0.4rem; color: var(--rx-head); font-size: 0.875rem; font-weight: 600; }
+.rx-map svg { display: block; width: 100%; height: auto; }
+.rx-link { stroke: var(--line-strong, #b5b5b5); stroke-width: 1.5; fill: none; }
+.rx-link.is-chord { stroke-dasharray: 5 4; }
+.rx-node { cursor: pointer; }
+.rx-node circle { fill: var(--rx-card); stroke: var(--rx-head); stroke-width: 1.4; transition: fill 0.15s; }
+.rx-node:hover circle { fill: #f2f2f2; }
+.rx-node[aria-pressed="true"] circle { fill: var(--rx-head); }
+.rx-node text { fill: var(--rx-head); font-size: 10.5px; font-weight: 700; }
+.rx-node[aria-pressed="true"] text { fill: #ffffff; }
+.rx-city { fill: var(--rx-faint); font-size: 10px; }
+.rx-map-legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0.4rem 0 0; padding: 0; list-style: none; color: var(--rx-faint); font-size: 0.75rem; }
+.rx-map-legend li { display: inline-flex; align-items: center; gap: 0.4rem; }
+.rx-map-legend i { display: inline-block; width: 1.25rem; border-top: 1.5px solid var(--line-strong, #b5b5b5); }
+.rx-map-legend i.is-chord { border-top-style: dashed; }
+
+.rx-user-id { margin: 0; color: var(--rx-head); font-size: 1.05rem; font-weight: 600; }
+.rx-user-id span { color: var(--rx-faint); font-weight: 400; }
+.rx-user p { margin: 0.35rem 0 0; font-size: 0.875rem; }
+.rx-user .rx-kind { color: var(--rx-text); }
+.rx-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.25rem 0.85rem; margin: 0.6rem 0 0; font-size: 0.8125rem; }
+.rx-facts dt { color: var(--rx-faint); }
+@media (max-width: 520px) {
+  .rx-facts { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
+  .rx-facts dd { margin-bottom: 0.4rem; }
+}
+.rx-facts dd { margin: 0; color: var(--rx-head); font-variant-numeric: tabular-nums; }
+.rx-counts { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; }
+.rx-count { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+.rx-key { display: inline-block; flex: none; width: 0.9rem; height: 3px; border-radius: 2px; }
+.rx-gkey { display: inline-block; flex: none; width: 0.6rem; height: 0.6rem; border-radius: 2px; }
+
+/* ---- the first screens under each method */
+.rx-feeds {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+  gap: 0.75rem;
+}
+.rx-col { min-width: 0; }
+.rx-col-head { display: flex; align-items: center; gap: 0.4rem; margin: 0; color: var(--rx-head); font-size: 0.8125rem; font-weight: 600; }
+.rx-boost { margin: 0.1rem 0 0.45rem; color: var(--rx-faint); font-size: 0.75rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rx-list { display: grid; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.rx-item {
+  display: grid;
+  grid-template-columns: 1.1rem 4px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.1rem;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--rx-line-soft);
+  border-radius: 6px;
+  background: var(--rx-panel);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+.rx-item.is-out { border: 1.5px dashed var(--rx-head); background: var(--rx-card); }
+.rx-rank { color: var(--rx-faint); font-variant-numeric: tabular-nums; text-align: right; }
+.rx-bar { align-self: stretch; border-radius: 2px; }
+.rx-name { overflow-wrap: anywhere; color: var(--rx-head); }
+.rx-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0.75rem 0 0; padding: 0; list-style: none; color: var(--rx-faint); font-size: 0.75rem; }
+.rx-legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.rx-legend .rx-out-key { display: inline-block; width: 0.9rem; height: 0.7rem; border: 1.5px dashed var(--rx-head); border-radius: 3px; }
+
+/* ---- the days on which the first screen differs from the ideal one */
+.rx-strip-panel svg { display: block; width: 100%; height: auto; }
+.rx-strip-track { fill: var(--rx-line-soft); }
+.rx-strip-row-label { fill: var(--rx-head); font-size: 11px; }
+.rx-strip-count { fill: var(--rx-faint); font-size: 11px; }
+.rx-strip-tick { fill: var(--rx-faint); font-size: 10.5px; }
+.rx-strip-axis { stroke: var(--line-strong, #b5b5b5); stroke-width: 1; }
+.rx-strip-window { stroke: var(--rx-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.rx-strip-day { stroke: var(--rx-head); stroke-width: 1.5; }
+.rx-strip-hit { fill: transparent; cursor: pointer; }
+
+.rx-note { margin: 1.25rem 0 1.25rem; font-size: 0.95rem; }
+.rx-fine { margin: 0.75rem 0 0; color: var(--ink-faint, #6b6b6b); font-size: 0.85rem; }
