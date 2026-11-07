@@ -231,7 +231,12 @@ python3 summarize.py data
 open -a Webots-nightly webots_demo/worlds/disaster_response.wbt
 cd webots_demo
 python3 tools/collect_data.py --N 100 --track 200 --seeds 2026-2045
-python3 tools/analyze_runs.py output/runs</code></pre>
+python3 tools/analyze_runs.py output/runs
+
+# recommendation systems (case study (B) with products and users)
+cd recommendation_demo
+python3 run_demo.py
+python3 run_montecarlo.py --jobs 6</code></pre>
     <p class="has-text-centered"><a class="button-pill" href="download/code.zip"><span class="icon" data-icon="download" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></span><span>Download code (.zip)</span></a></p>
   </div>
 </section>
