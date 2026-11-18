@@ -1,8 +1,8 @@
 /* recommendation.css: the "Recommendation systems" section (#recommendation): the three steps,
    the headline numbers, the main chart, the explorer (#rec-explorer, assets/js/recommendation.js)
-   and the simulation details. Namespace .rx-*. Light panels in the page's Nerfies look, like
-   the playground; the genre colors are those of recommendation_demo/make_figures.py. No dark-mode
-   rules (the page has none). */
+   and the simulation details. Namespace .rx-*. Light panels in the page's Nerfies look; the
+   genre colors are those of recommendation_demo/make_figures.py. No dark-mode rules (the page
+   has none). */
 
 #recommendation {
   --rx-head: var(--ink, #363636);

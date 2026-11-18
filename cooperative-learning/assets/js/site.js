@@ -4,7 +4,7 @@
    3. The teaser video ([data-autoplay-when-visible]): muted play while at least half
       visible, pause once it leaves the viewport; never with sound, never with reduced motion.
    4. Smooth scrolling for in-page links (instant with reduced motion).
-   The interactive components (webots-sim, playground, charts) initialize themselves. */
+   The interactive components (webots-sim, charts) initialize themselves. */
 (function () {
   "use strict";
 
